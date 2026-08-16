@@ -1,0 +1,139 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AuditOperation {
+  INCREMENT
+  DECREMENT
+  SET
+}
+
+enum Unit {
+  PCS
+  BOX
+  ROLL
+  PACK
+  PAIR
+  OTHER
+}
+
+model Role {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  description String?
+
+  users User[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id           Int    @id @default(autoincrement())
+  username     String @unique
+  passwordHash String
+
+  isActive Boolean @default(true)
+
+  roleId Int
+  role   Role @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  sessions Session[]
+  changes  InventoryChange[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([roleId])
+  @@index([isActive])
+}
+
+model Session {
+  id     String @id
+  userId Int
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  lastUsedAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Category {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  description String?
+
+  materials Material[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Material {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String?
+
+  unit Unit @default(PCS)
+
+  minimumQuantity Int @default(0)
+
+  isActive Boolean @default(true)
+
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  inventory Inventory?
+  changes   InventoryChange[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([categoryId, name])
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([name])
+}
+
+model Inventory {
+  id Int @id @default(autoincrement())
+
+  materialId Int      @unique
+  material   Material @relation(fields: [materialId], references: [id], onDelete: Restrict)
+
+  quantity Int @default(0)
+  version  Int @default(1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model InventoryChange {
+  id BigInt @id @default(autoincrement())
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  materialId Int
+  material   Material @relation(fields: [materialId], references: [id], onDelete: Restrict)
+
+  oldQuantity Int
+  newQuantity Int
+  difference  Int
+
+  operation AuditOperation
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([materialId, createdAt])
+  @@index([createdAt])
+}

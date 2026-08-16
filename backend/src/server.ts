@@ -1,6 +1,8 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 
+import { prisma } from "./lib/prisma.js";
+
 const app = Fastify({
   logger: true,
 });
@@ -16,6 +18,15 @@ app.get("/health", async () => {
   };
 });
 
+app.get("/health/db", async () => {
+  await prisma.$queryRaw`SELECT 1`;
+
+  return {
+    status: "ok",
+    database: "connected",
+  };
+});
+
 const start = async () => {
   try {
     await app.listen({
@@ -24,6 +35,7 @@ const start = async () => {
     });
   } catch (error) {
     app.log.error(error);
+    await prisma.$disconnect();
     process.exit(1);
   }
 };
