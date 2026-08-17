@@ -1,4 +1,4 @@
-### 📦 Warehouse Inventory
+# 📦 Warehouse Inventory
 
 A simple web application for managing and tracking warehouse consumable inventory.
 
