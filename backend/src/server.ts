@@ -1,5 +1,5 @@
 import "dotenv/config";
-
+import cookie from "@fastify/cookie";
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 
@@ -26,6 +26,8 @@ app.setErrorHandler((error, request, reply) => {
     message: "Internal server error",
   });
 });
+await app.register(cookie);
+
 await app.register(cors, {
   origin: "http://localhost:3000",
 });
