@@ -30,6 +30,7 @@ await app.register(cookie);
 
 await app.register(cors, {
   origin: "http://localhost:3000",
+  credentials: true,
 });
 
 app.get("/health", async () => {
