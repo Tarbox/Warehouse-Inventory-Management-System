@@ -2,9 +2,12 @@
 
 import {
   useEffect,
+  useCallback,
   useState,
 } from "react";
-
+import {
+  useInventoryRealtime,
+} from "../../hooks/useInventoryRealtime";
 import {
   ApiError,
   decrementInventory,
@@ -67,6 +70,52 @@ export default function InventoryPage() {
       setLoading(false);
     }
   }
+  const handleInventoryUpdated =
+  useCallback(
+    ({
+      materialId,
+      quantity,
+      version,
+    }: {
+      materialId: number;
+      quantity: number;
+      version: number;
+    }) => {
+      setItems((currentItems) =>
+        currentItems.map((item) => {
+          if (
+            item.id !== materialId
+          ) {
+            return item;
+          }
+
+          if (
+            version <= item.version
+          ) {
+            return item;
+          }
+
+          return {
+            ...item,
+
+            quantity,
+
+            version,
+
+            lowStock:
+              quantity <=
+              item.minimumQuantity,
+          };
+        }),
+      );
+    },
+    [],
+  );
+
+useInventoryRealtime({
+  onInventoryUpdated:
+    handleInventoryUpdated,
+});
 
   useEffect(() => {
     load();
@@ -94,6 +143,12 @@ export default function InventoryPage() {
       setItems((currentItems) =>
         currentItems.map((item) => {
           if (item.id !== materialId) {
+            return item;
+          }
+
+          if (
+            response.version <= item.version
+          ) {
             return item;
           }
 
