@@ -2,7 +2,9 @@ import {
   Prisma,
   type AuditOperation,
 } from "../../generated/prisma/client/client.js";
-
+import {
+  broadcast,
+} from "../realtime/realtime.manager.js";
 import { prisma } from "../../lib/prisma.js";
 
 export async function listInventory() {
@@ -63,86 +65,114 @@ type AdjustInventoryInput = {
 export async function adjustInventory(
   input: AdjustInventoryInput,
 ) {
-  return prisma.$transaction(
-    async (tx) => {
-      const rows = await tx.$queryRaw<
-        Array<{
-          id: number;
-          materialId: number;
-          quantity: number;
-          version: number;
-        }>
-      >(Prisma.sql`
-        SELECT
-          id,
-          "materialId",
-          quantity,
-          version
-        FROM "Inventory"
-        WHERE "materialId" = ${input.materialId}
-        FOR UPDATE
-      `);
+  const result =
+    await prisma.$transaction(
+      async (tx) => {
+        const rows = await tx.$queryRaw<
+          Array<{
+            id: number;
+            materialId: number;
+            quantity: number;
+            version: number;
+          }>
+        >(Prisma.sql`
+          SELECT
+            id,
+            "materialId",
+            quantity,
+            version
+          FROM "Inventory"
+          WHERE "materialId" = ${input.materialId}
+          FOR UPDATE
+        `);
 
-      const inventory = rows[0];
+        const inventory = rows[0];
 
-      if (!inventory) {
-        throw new Error("INVENTORY_NOT_FOUND");
-      }
+        if (!inventory) {
+          throw new Error(
+            "INVENTORY_NOT_FOUND",
+          );
+        }
 
-      const oldQuantity = inventory.quantity;
+        const oldQuantity =
+          inventory.quantity;
 
-      const difference =
-        input.operation === "INCREMENT"
-          ? input.amount
-          : -input.amount;
+        const difference =
+          input.operation === "INCREMENT"
+            ? input.amount
+            : -input.amount;
 
-      const newQuantity =
-        oldQuantity + difference;
+        const newQuantity =
+          oldQuantity + difference;
 
-      if (newQuantity < 0) {
-        throw new Error("INSUFFICIENT_STOCK");
-      }
+        if (newQuantity < 0) {
+          throw new Error(
+            "INSUFFICIENT_STOCK",
+          );
+        }
 
-      const updated =
-        await tx.inventory.update({
-          where: {
-            id: inventory.id,
-          },
-
-          data: {
-            quantity: newQuantity,
-            version: {
-              increment: 1,
+        const updated =
+          await tx.inventory.update({
+            where: {
+              id: inventory.id,
             },
+
+            data: {
+              quantity: newQuantity,
+
+              version: {
+                increment: 1,
+              },
+            },
+          });
+
+        await tx.inventoryChange.create({
+          data: {
+            userId: input.userId,
+            materialId: input.materialId,
+
+            oldQuantity,
+            newQuantity,
+            difference,
+
+            operation: input.operation,
           },
         });
 
-      await tx.inventoryChange.create({
-        data: {
-          userId: input.userId,
-          materialId: input.materialId,
+        return {
+          materialId:
+            input.materialId,
 
           oldQuantity,
           newQuantity,
           difference,
 
-          operation: input.operation,
-        },
-      });
+          version:
+            updated.version,
+        };
+      },
+      {
+        isolationLevel:
+          Prisma.TransactionIsolationLevel.ReadCommitted,
+      },
+    );
 
-      return {
-        materialId: input.materialId,
-        oldQuantity,
-        newQuantity,
-        difference,
-        version: updated.version,
-      };
+  broadcast({
+    type: "inventory.updated",
+
+    payload: {
+      materialId:
+        result.materialId,
+
+      quantity:
+        result.newQuantity,
+
+      version:
+        result.version,
     },
-    {
-      isolationLevel:
-        Prisma.TransactionIsolationLevel.ReadCommitted,
-    },
-  );
+  });
+
+  return result;
 }
 
 type SetInventoryServiceInput = {
@@ -155,7 +185,7 @@ type SetInventoryServiceInput = {
 export async function setInventory(
   input: SetInventoryServiceInput,
 ) {
-  return prisma.$transaction(
+  const result = await prisma.$transaction(
     async (tx) => {
       const inventory =
         await tx.inventory.findUnique({
@@ -233,4 +263,21 @@ export async function setInventory(
         Prisma.TransactionIsolationLevel.ReadCommitted,
     },
   );
+
+  broadcast({
+    type: "inventory.updated",
+
+    payload: {
+      materialId:
+        result.materialId,
+
+      quantity:
+        result.newQuantity,
+
+      version:
+        result.version,
+    },
+  });
+
+  return result;
 }

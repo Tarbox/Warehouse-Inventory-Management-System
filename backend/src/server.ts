@@ -2,6 +2,7 @@ import "dotenv/config";
 import cookie from "@fastify/cookie";
 import Fastify from "fastify";
 import cors from "@fastify/cors";
+import websocket from "@fastify/websocket";
 
 import { prisma } from "./lib/prisma.js";
 import { registerRoutes } from "./routes/index.js";
@@ -27,7 +28,7 @@ app.setErrorHandler((error, request, reply) => {
   });
 });
 await app.register(cookie);
-
+await app.register(websocket);
 await app.register(cors, {
   origin: "http://localhost:3000",
   credentials: true,
