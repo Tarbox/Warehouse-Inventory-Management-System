@@ -137,7 +137,7 @@ export default function LoginPage() {
           >
             {loading
               ? "Logging in..."
-              : "Login"}
+              : "Заходи ебать :)"}
           </button>
         </form>
       </div>

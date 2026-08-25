@@ -11,5 +11,6 @@ export const PERMISSIONS = {
   HISTORY_READ: "history.read",
 } as const;
 
+// Union of all permission values defined above.
 export type Permission =
   (typeof PERMISSIONS)[keyof typeof PERMISSIONS];

@@ -16,6 +16,9 @@ import {
   logout,
 } from "./auth.service.js";
 
+// Handles user login:
+// validates credentials, creates a server-side session,
+// and stores the session ID in an HttpOnly cookie.
 export async function loginController(
   request: FastifyRequest,
   reply: FastifyReply,
@@ -56,6 +59,8 @@ export async function loginController(
   });
 }
 
+// Handles logout by deleting the server-side session
+// and clearing the session cookie.
 export async function logoutController(
   request: FastifyRequest,
   reply: FastifyReply,
@@ -77,6 +82,8 @@ export async function logoutController(
   });
 }
 
+// Returns the currently authenticated user based on
+// the server-side session stored in the session cookie.
 export async function meController(
   request: FastifyRequest,
   reply: FastifyReply,

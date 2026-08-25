@@ -3,6 +3,7 @@ import {
   type Permission,
 } from "./permissions.js";
 
+// Maps role names to the permissions granted to each role.
 export const ROLE_PERMISSIONS: Record<
   string,
   readonly Permission[]
