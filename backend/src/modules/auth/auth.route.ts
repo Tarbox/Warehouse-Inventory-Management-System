@@ -6,6 +6,7 @@ import {
   meController,
 } from "./auth.controller.js";
 
+// Registers authentication-related HTTP routes.
 export async function authRoutes(
   app: FastifyInstance,
 ) {

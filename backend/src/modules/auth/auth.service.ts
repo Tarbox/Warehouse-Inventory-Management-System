@@ -6,8 +6,10 @@ import type {
   AuthenticatedUser,
 } from "./auth.types.js";
 
+// Session lifetime: 8 hours
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 8;
 
+// Returns a session ID and a sanitized user object on success
 export async function login(
   username: string,
   password: string,
@@ -54,6 +56,7 @@ export async function login(
   };
 }
 
+// Removes the server-side session associated with the given session ID
 export async function logout(sessionId: string) {
   await prisma.session.deleteMany({
     where: {
@@ -62,6 +65,8 @@ export async function logout(sessionId: string) {
   });
 }
 
+// Resolves a session ID to an active authenticated user
+// Expired sessions are removed and invalid sessions return null
 export async function getCurrentUser(
   sessionId: string,
 ): Promise<AuthenticatedUser | null> {
@@ -108,6 +113,8 @@ export async function getCurrentUser(
   return session.user;
 }
 
+// Creates a safe user object for returning to the client
+//without exposing sensitive fields such as passwordHash
 function sanitizeUser(user: AuthenticatedUser) {
   return {
     id: user.id,
