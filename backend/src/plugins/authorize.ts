@@ -17,6 +17,8 @@ export function hasPermission(
   return permissions.includes(permission);
 }
 
+// Creates a Fastify plugin that checks the required permission
+// before the route handler is executed.
 export function authorize(
   permission: Permission,
 ) {
