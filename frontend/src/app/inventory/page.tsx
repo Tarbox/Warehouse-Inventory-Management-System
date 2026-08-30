@@ -217,7 +217,7 @@ useInventoryRealtime({
     );
   }
 
-  return (// Render the main inventory page, including the header, search input, error messages, and the list of inventory items with increment and decrement buttons.
+  return (
     <main className="min-h-screen bg-slate-100">
       <header className="border-b bg-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
@@ -233,7 +233,6 @@ useInventoryRealtime({
               </p>
             )}
           </div>
-          // Render the logout button, which calls the handleLogout function when clicked.
           <button
             type="button"
             onClick={handleLogout}
@@ -243,7 +242,6 @@ useInventoryRealtime({
           </button>
         </div>
       </header>
-          // Render the main content area, including the search input, error messages, and the list of inventory items.
       <div className="mx-auto max-w-5xl px-4 py-6">
         <div className="mb-6">
           <input
@@ -258,13 +256,11 @@ useInventoryRealtime({
             className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 outline-none focus:border-slate-500"
           />
         </div>
-          // If there is an error message, display it in a styled div with a red background and text.
         {error && (
           <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
           </div>
         )}
-        // Render the list of filtered inventory items, each with its name, category, low stock indicator, and increment/decrement buttons for adjusting the quantity.
         <div className="space-y-3">
           {filteredItems.map((item) => (
             <div
@@ -286,7 +282,6 @@ useInventoryRealtime({
                   </span>
                 )}
               </div>
-                // Render the increment and decrement buttons along with the current quantity and unit of the inventory item. The buttons are disabled if the item is currently being updated or if the quantity is zero (for decrement).
               <div className="flex items-center gap-3">
                 <button
                   type="button"
@@ -304,7 +299,6 @@ useInventoryRealtime({
                 >
                   −
                 </button>
-                  // Display the current quantity and unit of the inventory item in a styled div.
                 <div className="min-w-24 text-center">
                   <div className="text-lg font-bold">
                     {item.quantity}
@@ -314,7 +308,6 @@ useInventoryRealtime({
                     {item.unit}
                   </div>
                 </div>
-                  // Render the increment button, which calls the changeQuantity function with the "increment" direction when clicked. The button is disabled if the item is currently being updated.
                 <button
                   type="button"
                   disabled={
@@ -333,7 +326,6 @@ useInventoryRealtime({
               </div>
             </div>
           ))}
-          // If there are no filtered items to display, show a message indicating that no materials were found.
           {filteredItems.length === 0 && (
             <div className="rounded-xl bg-white p-8 text-center text-slate-500">
               No materials found.
