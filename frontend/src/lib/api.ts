@@ -185,3 +185,53 @@ export async function decrementInventory(
     },
   );
 }
+
+// Set the inventory quantity for a specific material to a desired value.
+export type HistoryItem = {
+  id: string;
+
+  user: {
+    id: number;
+    username: string;
+  };
+
+  material: {
+    id: number;
+    name: string;
+    unit: string;
+  };
+
+  oldQuantity: number;
+  newQuantity: number;
+  difference: number;
+
+  operation:
+    | "INCREMENT"
+    | "DECREMENT"
+    | "SET";
+
+  createdAt: string;
+};
+
+// Response returned when requesting the inventory change history.
+export type HistoryResponse = {
+  items: HistoryItem[];
+
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+};
+
+// Retrieve the inventory change history from the Backend with pagination support.
+export async function getHistory(
+  page = 1,
+  limit = 50,
+) {
+// Fetch the history data from the Backend API, including pagination parameters in the query string.
+  return request<HistoryResponse>(
+    `/api/history?page=${page}&limit=${limit}`,
+  );
+}

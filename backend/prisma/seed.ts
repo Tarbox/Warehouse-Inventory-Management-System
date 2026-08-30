@@ -4,15 +4,33 @@ import argon2 from "argon2";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 
-const databaseUrl = process.env.DATABASE_URL;
+function requireEnv(name: string): string {
+  const value = process.env[name];
+
+  if (!value) {
+    throw new Error(
+      `${name} environment variable is required`,
+    );
+  }
+
+  return value;
+}
+
+const databaseUrl = requireEnv(
+  "DATABASE_URL",
+);
 
 if (!databaseUrl) {
   throw new Error("DATABASE_URL is not configured");
 }
 
-const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+const adminPassword = requireEnv(
+  "SEED_ADMIN_PASSWORD",
+);
 
-const workerPassword = process.env.SEED_WORKER_PASSWORD;
+const workerPassword = requireEnv(
+  "SEED_WORKER_PASSWORD",
+);
 
 if (!adminPassword || !workerPassword) {
   throw new Error(
