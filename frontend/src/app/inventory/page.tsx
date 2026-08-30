@@ -18,40 +18,41 @@ import {
   type InventoryItem,
   type User,
 } from "../../lib/api";
-
+// Import the useRouter hook from Next.js to handle navigation.
 import { useRouter } from "next/navigation";
 
+// The InventoryPage component is the main page for managing the warehouse inventory. It displays a list of materials, their quantities, and allows users to increment or decrement the inventory.
 export default function InventoryPage() {
   const router = useRouter();
-
+// State variables to manage user information, inventory items, search query, loading state, updating state, and error messages.
   const [user, setUser] =
     useState<User | null>(null);
-
+// State variable to hold the list of inventory items.
   const [items, setItems] =
     useState<InventoryItem[]>([]);
-
+// State variable to hold the search query for filtering inventory items.
   const [search, setSearch] =
     useState("");
-
+// State variable to indicate whether the inventory data is currently being loaded.
   const [loading, setLoading] =
     useState(true);
-
+// State variable to hold the ID of the inventory item that is currently being updated (incremented or decremented).
   const [updatingId, setUpdatingId] =
     useState<number | null>(null);
-
+// State variable to hold any error messages that may occur during API requests or inventory updates.
   const [error, setError] =
     useState<string | null>(null);
-
+// The load function retrieves the current user and inventory data from the backend API and updates the corresponding state variables. It also handles any errors that may occur during the API requests.
   async function load() {
     try {
       setError(null);
-
+      // Use Promise.all to fetch the current user and inventory data concurrently.
       const [userResponse, inventoryResponse] =
         await Promise.all([
           getCurrentUser(),
           getInventory(),
         ]);
-
+      // Update the state variables with the retrieved user and inventory data.
       setUser(userResponse.user);
       setItems(inventoryResponse.items);
     } catch (error) {
@@ -70,6 +71,7 @@ export default function InventoryPage() {
       setLoading(false);
     }
   }
+  // Handle inventory updates received from the realtime connection by updating the corresponding item in the state.
   const handleInventoryUpdated =
   useCallback(
     ({
@@ -111,16 +113,16 @@ export default function InventoryPage() {
     },
     [],
   );
-
+// Use the useInventoryRealtime hook to subscribe to inventory updates and handle them using the handleInventoryUpdated callback.
 useInventoryRealtime({
   onInventoryUpdated:
     handleInventoryUpdated,
 });
-
+// Use the useEffect hook to load the current user and inventory data when the component mounts.
   useEffect(() => {
     load();
   }, []);
-
+// The changeQuantity function is responsible for incrementing or decrementing the quantity of a specific inventory item. It updates the state to reflect the changes and handles any errors that may occur during the API requests.
   async function changeQuantity(
     materialId: number,
     direction: "increment" | "decrement",
@@ -134,12 +136,12 @@ useInventoryRealtime({
           ? await incrementInventory(
               materialId,
               1,
-            )
+            )// If the direction is "increment", call the incrementInventory API function to increase the quantity of the specified material by 1.
           : await decrementInventory(
               materialId,
               1,
             );
-
+      // If the direction is "decrement", call the decrementInventory API function to decrease the quantity of the specified material by 1.
       setItems((currentItems) =>
         currentItems.map((item) => {
           if (item.id !== materialId) {
@@ -151,7 +153,7 @@ useInventoryRealtime({
           ) {
             return item;
           }
-
+          // Update the item in the state with the new quantity, version, and low stock status based on the response from the API.
           return {
             ...item,
 
@@ -171,12 +173,12 @@ useInventoryRealtime({
       if (
         error instanceof ApiError &&
         error.status === 401
-      ) {
+      ) {// If the error is an ApiError with a status of 401 (Unauthorized), redirect the user to the login page.
         router.replace("/login");
         return;
       }
 
-      if (
+      if (// If the error is an ApiError, display the error message returned from the API. Otherwise, display a generic error message indicating that the inventory update failed.
         error instanceof ApiError
       ) {
         setError(error.message);
@@ -189,13 +191,13 @@ useInventoryRealtime({
       setUpdatingId(null);
     }
   }
-
+// The handleLogout function logs the user out by calling the logout API function, then redirects the user to the login page and refreshes the router to clear any cached data.
   async function handleLogout() {
     await logout();
     router.replace("/login");
     router.refresh();
   }
-
+// Filter the inventory items based on the search query entered by the user. The filteredItems array contains only those items whose names include the search query (case-insensitive).
   const filteredItems =
     items.filter((item) =>
       item.name
@@ -204,7 +206,7 @@ useInventoryRealtime({
           search.toLowerCase(),
         ),
     );
-
+// If the inventory data is still loading, display a loading message to the user.
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center">
@@ -215,7 +217,7 @@ useInventoryRealtime({
     );
   }
 
-  return (
+  return (// Render the main inventory page, including the header, search input, error messages, and the list of inventory items with increment and decrement buttons.
     <main className="min-h-screen bg-slate-100">
       <header className="border-b bg-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
@@ -224,14 +226,14 @@ useInventoryRealtime({
               📦 Warehouse Inventory
             </h1>
 
-            {user && (
+            {user && (// If the user is logged in, display their username and role in the header.
               <p className="text-sm text-slate-500">
                 {user.username} ·{" "}
                 {user.role.name}
               </p>
             )}
           </div>
-
+          // Render the logout button, which calls the handleLogout function when clicked.
           <button
             type="button"
             onClick={handleLogout}
@@ -241,7 +243,7 @@ useInventoryRealtime({
           </button>
         </div>
       </header>
-
+          // Render the main content area, including the search input, error messages, and the list of inventory items.
       <div className="mx-auto max-w-5xl px-4 py-6">
         <div className="mb-6">
           <input
@@ -256,13 +258,13 @@ useInventoryRealtime({
             className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 outline-none focus:border-slate-500"
           />
         </div>
-
+          // If there is an error message, display it in a styled div with a red background and text.
         {error && (
           <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
           </div>
         )}
-
+        // Render the list of filtered inventory items, each with its name, category, low stock indicator, and increment/decrement buttons for adjusting the quantity.
         <div className="space-y-3">
           {filteredItems.map((item) => (
             <div
@@ -284,7 +286,7 @@ useInventoryRealtime({
                   </span>
                 )}
               </div>
-
+                // Render the increment and decrement buttons along with the current quantity and unit of the inventory item. The buttons are disabled if the item is currently being updated or if the quantity is zero (for decrement).
               <div className="flex items-center gap-3">
                 <button
                   type="button"
@@ -302,7 +304,7 @@ useInventoryRealtime({
                 >
                   −
                 </button>
-
+                  // Display the current quantity and unit of the inventory item in a styled div.
                 <div className="min-w-24 text-center">
                   <div className="text-lg font-bold">
                     {item.quantity}
@@ -312,7 +314,7 @@ useInventoryRealtime({
                     {item.unit}
                   </div>
                 </div>
-
+                  // Render the increment button, which calls the changeQuantity function with the "increment" direction when clicked. The button is disabled if the item is currently being updated.
                 <button
                   type="button"
                   disabled={
@@ -331,7 +333,7 @@ useInventoryRealtime({
               </div>
             </div>
           ))}
-
+          // If there are no filtered items to display, show a message indicating that no materials were found.
           {filteredItems.length === 0 && (
             <div className="rounded-xl bg-white p-8 text-center text-slate-500">
               No materials found.
