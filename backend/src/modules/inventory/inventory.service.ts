@@ -2,11 +2,13 @@ import {
   Prisma,
   type AuditOperation,
 } from "../../generated/prisma/client/client.js";
+// Import the broadcast function from the realtime manager module.
 import {
   broadcast,
 } from "../realtime/realtime.manager.js";
 import { prisma } from "../../lib/prisma.js";
 
+// The function retrieves a list of active materials along with their inventory information from the database.
 export async function listInventory() {
   const materials =
     await prisma.material.findMany({
@@ -23,7 +25,7 @@ export async function listInventory() {
         name: "asc",
       },
     });
-
+  // Map the retrieved materials to the InventoryItem type and return the result.
   return materials.map((material) => {
     const quantity =
       material.inventory?.quantity ?? 0;
@@ -51,7 +53,7 @@ export async function listInventory() {
     };
   });
 }
-
+// The function retrieves the inventory information for a specific material by its ID.
 type AdjustInventoryInput = {
   materialId: number;
   userId: number;
@@ -61,7 +63,7 @@ type AdjustInventoryInput = {
     "INCREMENT" | "DECREMENT"
   >;
 };
-
+// The function adjusts the inventory quantity for a specific material based on the provided input.
 export async function adjustInventory(
   input: AdjustInventoryInput,
 ) {
@@ -74,7 +76,7 @@ export async function adjustInventory(
             materialId: number;
             quantity: number;
             version: number;
-          }>
+          }>// The query retrieves the inventory record for the specified material ID and locks it for update to prevent concurrent modifications.
         >(Prisma.sql`
           SELECT
             id,
@@ -85,9 +87,9 @@ export async function adjustInventory(
           WHERE "materialId" = ${input.materialId}
           FOR UPDATE
         `);
-
+        // If the query returns no rows, it means the inventory record for the specified material ID does not exist, and an error is thrown.
         const inventory = rows[0];
-
+        // If the inventory record for the specified material is not found, throw an error.
         if (!inventory) {
           throw new Error(
             "INVENTORY_NOT_FOUND",
@@ -110,7 +112,7 @@ export async function adjustInventory(
             "INSUFFICIENT_STOCK",
           );
         }
-
+        // Update the inventory record with the new quantity and increment the version number to indicate a change.
         const updated =
           await tx.inventory.update({
             where: {
@@ -125,7 +127,7 @@ export async function adjustInventory(
               },
             },
           });
-
+        // Create a new inventory change record to log the adjustment made to the inventory, including the user who made the change and the operation performed.
         await tx.inventoryChange.create({
           data: {
             userId: input.userId,
@@ -138,7 +140,7 @@ export async function adjustInventory(
             operation: input.operation,
           },
         });
-
+        // Return the result of the inventory adjustment, including the material ID, old quantity, new quantity, difference, and updated version number.
         return {
           materialId:
             input.materialId,
@@ -171,20 +173,20 @@ export async function adjustInventory(
         result.version,
     },
   });
-
+// Return the result of the inventory adjustment, including the material ID, old quantity, new quantity, difference, and updated version number.
   return result;
 }
-
+// The input type for the setInventory function, which includes the material ID, user ID, desired quantity, and expected version of the inventory record.
 type SetInventoryServiceInput = {
   materialId: number;
   userId: number;
   quantity: number;
   expectedVersion: number;
 };
-
+// The function sets the inventory quantity for a specific material to a desired value, ensuring that the operation is performed only if the expected version matches the current version of the inventory record.
 export async function setInventory(
   input: SetInventoryServiceInput,
-) {
+) {// Perform the inventory update within a transaction to ensure data consistency and handle potential version conflicts.
   const result = await prisma.$transaction(
     async (tx) => {
       const inventory =
@@ -193,18 +195,18 @@ export async function setInventory(
             materialId: input.materialId,
           },
         });
-
+      // If the inventory record for the specified material is not found, throw an error indicating that the inventory does not exist.
       if (!inventory) {
         throw new Error("INVENTORY_NOT_FOUND");
       }
-
+      // If the current version of the inventory record does not match the expected version provided in the input, throw an error indicating a version conflict.
       if (
         inventory.version !==
         input.expectedVersion
       ) {
         throw new Error("VERSION_CONFLICT");
       }
-
+    
       const oldQuantity =
         inventory.quantity;
 
@@ -220,7 +222,7 @@ export async function setInventory(
           version: inventory.version,
         };
       }
-
+      // Update the inventory record with the new quantity and increment the version number to indicate a change.
       const updated =
         await tx.inventory.update({
           where: {
@@ -236,7 +238,7 @@ export async function setInventory(
             },
           },
         });
-
+      // Create a new inventory change record to log the adjustment made to the inventory, including the user who made the change and the operation performed.
       await tx.inventoryChange.create({
         data: {
           userId: input.userId,
@@ -263,7 +265,7 @@ export async function setInventory(
         Prisma.TransactionIsolationLevel.ReadCommitted,
     },
   );
-
+  // Broadcast the inventory update event to all connected clients using the broadcast function from the realtime manager module.
   broadcast({
     type: "inventory.updated",
 
@@ -278,6 +280,6 @@ export async function setInventory(
         result.version,
     },
   });
-
+  
   return result;
 }
