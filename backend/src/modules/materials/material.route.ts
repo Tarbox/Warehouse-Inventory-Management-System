@@ -5,7 +5,14 @@ import { authorize } from "../../plugins/authorize.js";
 
 import { PERMISSIONS } from "../auth/permissions.js";
 
-import { getMaterials } from "./material.controller.js";
+import {
+  createMaterialController,
+  deleteMaterialController,
+  getMaterialController,
+  getMaterials,
+  updateMaterialController,
+} from "./material.controller.js";
+
 
 export async function materialRoutes(
   app: FastifyInstance,
@@ -29,5 +36,40 @@ export async function materialRoutes(
       "/materials",
       getMaterials,
     );
-  });
+    
+    protectedRoutes.get(
+      "/materials/:id",
+      getMaterialController,
+      );
+    },
+  );
+// Register admin routes for managing materials.
+  await app.register(
+    async (adminRoutes) => {
+      await adminRoutes.register(
+        authenticate,
+      );
+// Check whether the authenticated user has permission to manage materials.
+      await adminRoutes.register(
+        authorize(
+          PERMISSIONS.MATERIALS_MANAGE,
+        ),
+      );
+// POST /materials
+      adminRoutes.post(
+        "/materials",
+        createMaterialController,
+      );
+// PATCH /materials/:id
+      adminRoutes.patch(
+        "/materials/:id",
+        updateMaterialController,
+      );
+// DELETE /materials/:id
+      adminRoutes.delete(
+        "/materials/:id",
+        deleteMaterialController,
+      );
+    },
+  );
 }

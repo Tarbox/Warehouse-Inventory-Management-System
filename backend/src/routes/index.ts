@@ -4,11 +4,13 @@ import { authRoutes } from "../modules/auth/auth.route.js";
 import { inventoryRoutes } from "../modules/inventory/inventory.route.js";
 import { materialRoutes } from "../modules/materials/material.route.js";
 import { realtimeRoutes } from "../modules/realtime/realtime.route.js";
+import { historyRoutes } from "../modules/history/history.route.js";
 
 // The function registers all the routes with the Fastify instance.
 export async function registerRoutes(
   app: FastifyInstance,
-) {// Register the authentication routes with the Fastify instance.
+) {
+  // Register the authentication routes with the Fastify instance.
   await app.register(authRoutes, {
     prefix: "/api",
   });
@@ -22,6 +24,10 @@ export async function registerRoutes(
   });
   // Register the realtime routes with the Fastify instance.
   await app.register(realtimeRoutes, {
+    prefix: "/api",
+  });
+  // Register the history routes with the Fastify instance.
+  await app.register(historyRoutes, {
     prefix: "/api",
   });
 }
