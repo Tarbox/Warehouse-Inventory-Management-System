@@ -42,6 +42,58 @@ export const listMaterialsQuerySchema = z.object({
     .default(20),
 });
 
+export const materialIdParamSchema = z.object({
+  id: z.coerce.number().int().positive(),
+});
+
+export const createMaterialSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1)
+    .max(200),
+
+  description: z
+    .string()
+    .trim()
+    .max(1000)
+    .nullable()
+    .optional(),
+
+  unit: z.enum([
+    "PCS",
+    "BOX",
+    "ROLL",
+    "PACK",
+    "PAIR",
+    "OTHER",
+  ]),
+
+  minimumQuantity: z
+    .number()
+    .int()
+    .min(0)
+    .max(1000000),
+
+  categoryId: z
+    .number()
+    .int()
+    .positive(),
+
+  initialQuantity: z
+    .number()
+    .int()
+    .min(0)
+    .max(1000000)
+    .default(0),
+});
+
+export const updateMaterialSchema =
+  createMaterialSchema
+    .omit({
+      initialQuantity: true,
+    })
+    .partial();
 // Generate the TypeScript type directly from the Zod schema.
 export type ListMaterialsQuery = z.infer<
   typeof listMaterialsQuerySchema
