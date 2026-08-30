@@ -1,5 +1,6 @@
 import { prisma } from "../../lib/prisma.js";
 import type { ListMaterialsQuery } from "./material.schema.js";
+import { toMaterialDto } from "./material.dto.js";
 
 export async function listMaterials(query: ListMaterialsQuery) {
   // Extract filtering and pagination parameters from the request query.
@@ -65,49 +66,16 @@ export async function listMaterials(query: ListMaterialsQuery) {
     }),
   ]);
   
-  // Transform the database records into the data structure
-  // that the API should return to the client.
+  // Map the retrieved materials to the MaterialDto type and filter by low stock if requested.
   const items = materials
-    .map((material) => {
-      if (!material.inventory) {
-        return {
-          id: material.id,
-          name: material.name,
-          description: material.description,
-          unit: material.unit,
-          minimumQuantity: material.minimumQuantity,
-          quantity: 0,
-          lowStock: true,
-          category: {
-            id: material.category.id,
-            name: material.category.name,
-          },
-        };
-      }
+  .map(toMaterialDto)
+  .filter((material) => {
+    if (lowStock === undefined) {
+      return true;
+    }
 
-      return {
-        id: material.id,
-        name: material.name,
-        description: material.description,
-        unit: material.unit,
-        minimumQuantity: material.minimumQuantity,
-        quantity: material.inventory.quantity,
-        lowStock:
-          material.inventory.quantity <=
-          material.minimumQuantity,
-        category: {
-          id: material.category.id,
-          name: material.category.name,
-        },
-      };
-    })
-    .filter((material) => {
-      if (lowStock === undefined) {
-        return true;
-      }
-
-      return material.lowStock === lowStock;
-    });
+    return material.lowStock === lowStock;
+  });
 
 
   // Return both the materials and pagination metadata.

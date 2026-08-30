@@ -1,6 +1,7 @@
 import { prisma } from "../../lib/prisma.js";
 
 import type { HistoryQuery } from "./history.schema.js";
+import { toHistoryDto } from "./history.dto.js";
 
 // The function retrieves a paginated list of inventory change history records based on the provided query parameters.
 export async function listHistory(
@@ -70,28 +71,9 @@ export async function listHistory(
       }),
     ]);
 
-// Return the retrieved history records along with pagination information to the caller.
+// Return the retrieved history records along with pagination information.
 return {
-  items: items.map((item) => ({
-    id: item.id.toString(),
-
-    user: {
-      id: item.user.id,
-      username: item.user.username,
-    },
-
-    material: {
-      id: item.material.id,
-      name: item.material.name,
-      unit: item.material.unit,
-    },
-
-    oldQuantity: item.oldQuantity,
-    newQuantity: item.newQuantity,
-    difference: item.difference,
-    operation: item.operation,
-    createdAt: item.createdAt,
-  })),
+  items: items.map(toHistoryDto),
 
   pagination: {
     page,
