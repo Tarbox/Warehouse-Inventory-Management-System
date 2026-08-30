@@ -1,3 +1,4 @@
+// Base URL of the Backend API.
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ??
   "http://localhost:4000";
@@ -23,6 +24,7 @@ export class ApiError extends Error {
     this.code = code;
   }
 }
+// Response returned after an inventory quantity change.
 export type InventoryMutationResponse = {
   materialId: number;
   oldQuantity: number;
@@ -30,6 +32,10 @@ export type InventoryMutationResponse = {
   difference: number;
   version: number;
 };
+
+// Generic HTTP request helper used by all API functions. 
+// Handles credentials, JSON headers, response parsing, 
+// and conversion of API errors into ApiError instances.
 async function request<T>(
   path: string,
   options: RequestInit = {},
@@ -50,6 +56,7 @@ headers: {
     },
   );
 
+  // Parse the JSON response from the Backend.
   const data =
     (await response.json()) as T | ApiErrorResponse;
 
@@ -67,6 +74,8 @@ headers: {
   return data as T;
 }
 
+// Frontend representation of an authenticated user 
+// returned by the Backend API.
 export type User = {
   id: number;
   username: string;
@@ -78,6 +87,7 @@ export type User = {
   };
 };
 
+// Represents a material together with its current inventory data.
 export type InventoryItem = {
   id: number;
   name: string;
@@ -95,10 +105,12 @@ export type InventoryItem = {
   version: number;
 };
 
+// Response returned when requesting the inventory list.
 export type InventoryResponse = {
   items: InventoryItem[];
 };
 
+// Authenticate a user and create a session on the Backend.
 export async function login(
   username: string,
   password: string,
@@ -116,6 +128,7 @@ export async function login(
   );
 }
 
+// End the current user session.
 export async function logout() {
   return request<{ success: boolean }>(
     "/api/auth/logout",
@@ -125,18 +138,21 @@ export async function logout() {
   );
 }
 
+// Retrieve the currently authenticated user using the session cookie.
 export async function getCurrentUser() {
   return request<{ user: User }>(
     "/api/auth/me",
   );
 }
 
+// Retrieve the current inventory list from the Backend.
 export async function getInventory() {
   return request<InventoryResponse>(
     "/api/inventory",
   );
 }
 
+// Increase the inventory quantity for a specific material.
 export async function incrementInventory(
   materialId: number,
   amount = 1,
@@ -153,6 +169,7 @@ export async function incrementInventory(
   );
 }
 
+// Decrease the inventory quantity for a specific material.
 export async function decrementInventory(
   materialId: number,
   amount = 1,
