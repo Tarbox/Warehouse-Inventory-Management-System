@@ -5,21 +5,22 @@ import { inventoryRoutes } from "../modules/inventory/inventory.route.js";
 import { materialRoutes } from "../modules/materials/material.route.js";
 import { realtimeRoutes } from "../modules/realtime/realtime.route.js";
 
+// The function registers all the routes with the Fastify instance.
 export async function registerRoutes(
   app: FastifyInstance,
-) {
+) {// Register the authentication routes with the Fastify instance.
   await app.register(authRoutes, {
     prefix: "/api",
   });
-
+  // Register the material routes with the Fastify instance.
   await app.register(materialRoutes, {
     prefix: "/api",
   });
-
+  // Register the inventory routes with the Fastify instance.
   await app.register(inventoryRoutes, {
     prefix: "/api",
   });
-
+  // Register the realtime routes with the Fastify instance.
   await app.register(realtimeRoutes, {
     prefix: "/api",
   });

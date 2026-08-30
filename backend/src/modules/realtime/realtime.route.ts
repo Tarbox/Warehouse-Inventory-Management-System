@@ -8,9 +8,13 @@ import {
   removeClient,
 } from "./realtime.manager.js";
 
+// The function registers the realtime routes with the Fastify instance.
 export async function realtimeRoutes(
   app: FastifyInstance,
 ) {
+  // Register a new route for the "/realtime" endpoint.
+  // The route is protected by the "authenticate" plugin.
+  // The route accepts WebSocket connections and handles incoming messages.
   await app.register(async (protectedRoutes) => {
     await protectedRoutes.register(
       authenticate,
@@ -18,7 +22,7 @@ export async function realtimeRoutes(
 
     protectedRoutes.get(
       "/realtime",
-      {
+      {// Enable WebSocket support for this route.
         websocket: true,
       },
       (socket, request) => {
@@ -31,8 +35,8 @@ export async function realtimeRoutes(
           JSON.stringify({
             type: "connection.ready",
           }),
-        );
-
+        )
+// If the message is a "ping" message, respond with a "pong" message.
         client.on("message", (message) => {
           if (
             message.toString() === "ping"
@@ -44,7 +48,7 @@ export async function realtimeRoutes(
             );
           }
         });
-
+// When the client disconnects, remove it from the list of clients and log the event.
         client.on("close", () => {
           removeClient(client);
 
