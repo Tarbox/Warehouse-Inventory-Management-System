@@ -235,3 +235,95 @@ export async function getHistory(
     `/api/history?page=${page}&limit=${limit}`,
   );
 }
+
+// Retrieve the list of categories from the Backend API.
+export type Category = {
+  id: number;
+  name: string;
+  description: string | null;
+};
+
+// Response returned when requesting the list of categories from the Backend API.
+export type CategoriesResponse = {
+  items: Category[];
+};
+
+// Fetch the list of categories from the Backend API.
+export async function getCategories() {
+  return request<CategoriesResponse>(
+    "/api/categories",
+  );
+}
+
+
+// Input data structure for creating a new material in the Backend API.
+export type CreateMaterialInput = {
+  name: string;
+  description?: string | null;
+  unit:
+    | "PCS"
+    | "BOX"
+    | "ROLL"
+    | "PACK"
+    | "PAIR"
+    | "OTHER";
+  minimumQuantity: number;
+  categoryId: number;
+  initialQuantity: number;
+};
+
+// Input data structure for updating an existing material in the Backend API.
+export type UpdateMaterialInput = {
+  name?: string;
+  description?: string | null;
+  unit?:
+    | "PCS"
+    | "BOX"
+    | "ROLL"
+    | "PACK"
+    | "PAIR"
+    | "OTHER";
+  minimumQuantity?: number;
+  categoryId?: number;
+};
+
+// Create a new material in the Backend API with the provided input data.
+export async function createMaterial(
+  input: CreateMaterialInput,
+) {
+  return request(
+    "/api/materials",
+    {
+      method: "POST",
+
+      body: JSON.stringify(input),
+    },
+  );
+}
+
+// Update an existing material in the Backend API with the provided input data.
+export async function updateMaterial(
+  id: number,
+  input: UpdateMaterialInput,
+) {
+  return request(
+    `/api/materials/${id}`,
+    {
+      method: "PATCH",
+
+      body: JSON.stringify(input),
+    },
+  );
+}
+
+// Delete a material from the Backend API by its ID.
+export async function deleteMaterial(
+  id: number,
+) {
+  return request<void>(
+    `/api/materials/${id}`,
+    {
+      method: "DELETE",
+    },
+  );
+}
