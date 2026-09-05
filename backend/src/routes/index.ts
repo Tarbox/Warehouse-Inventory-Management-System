@@ -7,6 +7,7 @@ import { realtimeRoutes } from "../modules/realtime/realtime.route.js";
 import { historyRoutes } from "../modules/history/history.route.js";
 import { categoryRoutes } from "../modules/categories/category.route.js";
 import { userRoutes } from "../modules/users/user.route.js";
+import { settingsRoutes } from "../modules/settings/settings.route.js";
 // The function registers all the routes with the Fastify instance.
 export async function registerRoutes(
   app: FastifyInstance,
@@ -37,6 +38,10 @@ export async function registerRoutes(
   });
   // Register the user routes with the Fastify instance.
   await app.register(userRoutes, {
+    prefix: "/api",
+  });
+  // Register the settings routes with the Fastify instance.
+  await app.register(settingsRoutes, {
     prefix: "/api",
   });
 }
