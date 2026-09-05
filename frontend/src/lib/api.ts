@@ -337,3 +337,114 @@ export async function deleteMaterial(
     },
   );
 }
+
+// Frontend representation of an admin user returned by the Backend API.
+export type AdminUser = {
+  id: number;
+  username: string;
+
+  isActive: boolean;
+
+  role: {
+    id: number;
+    name: string;
+  };
+
+  createdAt: string;
+  updatedAt: string;
+};
+
+// Response returned when requesting the list of users from the Backend API.
+export type UsersResponse = {
+  items: AdminUser[];
+};
+
+// Fetch the list of users from the Backend API.
+export async function getUsers() {
+  return request<UsersResponse>(
+    "/api/users",
+  );
+}
+
+// Create a new user in the Backend API with the provided input data.
+export async function createUser(
+  input: {
+    username: string;
+    password: string;
+    roleId: number;
+  },
+) {
+
+// Send a POST request to the Backend API to create a new user with the specified username, password, and role ID.
+  return request(
+    "/api/users",
+    {
+      method: "POST",
+      body: JSON.stringify(input),
+    },
+  );
+}
+
+// Disable a user in the Backend API by their ID.
+export async function disableUser(
+  id: number,
+) {
+
+// Send a POST request to the Backend API to disable the user with the specified ID.
+  return request<void>(
+    `/api/users/${id}/disable`,
+    {
+      method: "POST",
+    },
+  );
+}
+
+// Enable a user in the Backend API by their ID.
+export async function changeUserRole(
+  id: number,
+  roleId: number,
+) {
+
+// Send a PATCH request to the Backend API to change the role of the user with the specified ID to the new role ID.
+  return request(
+    `/api/users/${id}/role`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({
+        roleId,
+      }),
+    },
+  );
+}
+
+// Reset a user's password in the Backend API by their ID.
+export async function resetUserPassword(
+  id: number,
+  password: string,
+) {
+
+// Send a POST request to the Backend API to reset the password of the user with the specified ID to the new password.
+  return request<void>(
+    `/api/users/${id}/reset-password`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        password,
+      }),
+    },
+  );
+}
+
+// Delete a user in the Backend API by their ID.
+export async function deleteUser(
+  id: number,
+) {
+
+// Send a DELETE request to the Backend API to remove the user with the specified ID from the system.
+  return request<void>(
+    `/api/users/${id}`,
+    {
+      method: "DELETE",
+    },
+  );
+}
