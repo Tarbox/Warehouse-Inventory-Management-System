@@ -1,7 +1,6 @@
 // Base URL of the Backend API.
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ??
-  "http://localhost:4000";
+  process.env.NEXT_PUBLIC_API_URL ?? "";
 
 type ApiErrorResponse = {
   error: string;
@@ -477,7 +476,7 @@ export async function updateSetting(
   key: string,
   value: string,
 ) {
-  
+
 // Send a PATCH request to the Backend API to update the value of the system setting identified by the specified key.
 // The request body contains the new value for the setting, and the response includes the updated setting object.
   return request<{
