@@ -45,14 +45,23 @@ export async function loginController(
     });
   }
 
-  reply.setCookie(
-    SESSION_COOKIE_NAME,
-    result.sessionId,
-    {
-      ...SESSION_COOKIE_OPTIONS,
-      maxAge: 60 * 60 * 8,
-    },
-  );
+reply.setCookie(
+  SESSION_COOKIE_NAME,
+  result.sessionId,
+  {
+    ...SESSION_COOKIE_OPTIONS,
+
+    maxAge: Math.max(
+      0,
+      Math.floor(
+        (
+          result.expiresAt.getTime() -
+          Date.now()
+        ) / 1000,
+      ),
+    ),
+  },
+);
 
   return reply.send({
     user: result.user,

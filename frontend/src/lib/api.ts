@@ -448,3 +448,50 @@ export async function deleteUser(
     },
   );
 }
+
+// Frontend representation of a system setting returned by the Backend API.
+// Represents a system setting with its key, value, description, and timestamps.
+export type SystemSetting = {
+  id: number;
+  key: string;
+  value: string;
+  description: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+// Response returned when requesting the list of system settings from the Backend API.
+export type SettingsResponse = {
+  items: SystemSetting[];
+};
+
+// Fetch the list of system settings from the Backend API.
+export async function getSettings() {
+  return request<SettingsResponse>(
+    "/api/settings",
+  );
+}
+
+// Update a specific system setting in the Backend API by its key with the provided value.
+export async function updateSetting(
+  key: string,
+  value: string,
+) {
+  
+// Send a PATCH request to the Backend API to update the value of the system setting identified by the specified key.
+// The request body contains the new value for the setting, and the response includes the updated setting object.
+  return request<{
+    setting: SystemSetting;
+  }>(
+    `/api/settings/${encodeURIComponent(
+      key,
+    )}`,
+    {
+      method: "PATCH",
+
+      body: JSON.stringify({
+        value,
+      }),
+    },
+  );
+}
