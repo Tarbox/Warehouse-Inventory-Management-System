@@ -6,8 +6,31 @@ import type {
   AuthenticatedUser,
 } from "./auth.types.js";
 
-// Session lifetime: 8 hours
-const SESSION_DURATION_MS = 1000 * 60 * 60 * 8;
+async function getSessionDurationHours() {
+  const setting =
+    await prisma.systemSetting.findUnique({
+      where: {
+        key: "session_duration_hours",
+      },
+    });
+
+  if (!setting) {
+    return 8;
+  }
+
+  const hours =
+    Number(setting.value);
+
+  if (
+    !Number.isInteger(hours) ||
+    hours < 1 ||
+    hours > 168
+  ) {
+    return 8;
+  }
+
+  return hours;
+}
 
 // Returns a session ID and a sanitized user object on success
 export async function login(
@@ -36,11 +59,21 @@ export async function login(
     return null;
   }
 
+  const sessionDurationHours =
+  await getSessionDurationHours();
+
+const sessionDurationMs =
+  sessionDurationHours *
+  60 *
+  60 *
+  1000;
+
   const sessionId = generateSessionId();
 
   const expiresAt = new Date(
-    Date.now() + SESSION_DURATION_MS,
-  );
+  Date.now() +
+    sessionDurationMs,
+);
 
   await prisma.session.create({
     data: {
@@ -52,6 +85,7 @@ export async function login(
 
   return {
     sessionId,
+    expiresAt,
     user: sanitizeUser(user),
   };
 }

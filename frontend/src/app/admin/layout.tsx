@@ -44,6 +44,12 @@ export default function AdminLayout({
             >
               Users
             </Link>
+            <Link
+              href="/admin/settings"
+              className="hover:underline"
+            >
+              Settings
+            </Link>
           </nav>
         </div>
       </aside>
