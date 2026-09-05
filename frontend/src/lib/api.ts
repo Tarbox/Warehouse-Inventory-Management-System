@@ -47,22 +47,27 @@ async function request<T>(
 
       credentials: "include",
 
-headers: {
-  ...(options.body
-    ? { "Content-Type": "application/json" }
-    : {}),
-  ...options.headers,
-},
+      headers: {
+        ...(options.body
+        ? { "Content-Type": "application/json" }
+        : {}),
+      ...options.headers,
+      },
     },
   );
 
-  // Parse the JSON response from the Backend.
-  const data =
-    (await response.json()) as T | ApiErrorResponse;
-
   if (!response.ok) {
-    const error =
-      data as ApiErrorResponse;
+    let error: ApiErrorResponse = {
+      error: "UNKNOWN_ERROR",
+      message: "Request failed",
+    };
+
+    try {
+      error =
+        (await response.json()) as ApiErrorResponse;
+    } catch {
+      // Response has no JSON body.
+    }
 
     throw new ApiError(
       response.status,
@@ -71,8 +76,13 @@ headers: {
     );
   }
 
-  return data as T;
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  return (await response.json()) as T;
 }
+
 
 // Frontend representation of an authenticated user 
 // returned by the Backend API.
