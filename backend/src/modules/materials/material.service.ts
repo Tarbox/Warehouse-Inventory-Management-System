@@ -210,19 +210,55 @@ type UpdateMaterialInput = {
 export async function updateMaterial(
   id: number,
   input: UpdateMaterialInput,
-) {// Check if the material with the specified ID exists in the database.
+) {
   const material =
     await prisma.material.findUnique({
-      where: { id },
+      where: {
+        id,
+      },
     });
-  // If the material does not exist, throw an error indicating that it was not found.
+
   if (!material) {
     throw new Error(
       "MATERIAL_NOT_FOUND",
     );
   }
-  // If a category ID is provided in the input, check if the specified category exists in the database.
-  if (input.categoryId) {
+
+  const newName =
+    input.name ?? material.name;
+
+  const newCategoryId =
+    input.categoryId ??
+    material.categoryId;
+
+  /*
+   * Check whether another material
+   * with the same name exists
+   * in the target category.
+   */
+  const duplicate =
+    await prisma.material.findFirst({
+      where: {
+        name: newName,
+        categoryId: newCategoryId,
+
+        id: {
+          not: id,
+        },
+      },
+    });
+
+  if (duplicate) {
+    throw new Error(
+      "MATERIAL_ALREADY_EXISTS",
+    );
+  }
+
+  /*
+   * If category is being changed,
+   * make sure the target category exists.
+   */
+  if (input.categoryId !== undefined) {
     const category =
       await prisma.category.findUnique({
         where: {
@@ -236,14 +272,33 @@ export async function updateMaterial(
       );
     }
   }
-  // Update the material record in the database with the provided input data.
+
   return prisma.material.update({
     where: {
       id,
     },
-    // Spread the input data into the update operation, allowing for partial updates of the material's properties.
+
     data: {
-      ...input,
+      ...(input.name !== undefined && {
+        name: input.name,
+      }),
+
+      ...(input.description !== undefined && {
+        description: input.description,
+      }),
+
+      ...(input.unit !== undefined && {
+        unit: input.unit,
+      }),
+
+      ...(input.minimumQuantity !== undefined && {
+        minimumQuantity:
+          input.minimumQuantity,
+      }),
+
+      ...(input.categoryId !== undefined && {
+        categoryId: input.categoryId,
+      }),
     },
   });
 }

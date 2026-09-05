@@ -199,7 +199,20 @@ export async function updateMaterialController(
           "Category does not exist",
       });
     }
+    if (
+      error instanceof Error &&
+      error.message ===
+        "MATERIAL_ALREADY_EXISTS"
+    ) {
+      return reply.status(409).send({
+        error:
+          "MATERIAL_ALREADY_EXISTS",
 
+        message:
+          "A material with this name already exists in this category",
+      });
+    }
+    
     throw error;
   }
 }
