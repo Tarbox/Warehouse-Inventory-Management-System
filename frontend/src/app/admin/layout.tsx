@@ -38,6 +38,12 @@ export default function AdminLayout({
             >
               History
             </Link>
+            <Link
+              href="/admin/users"
+              className="hover:underline"
+            >
+              Users
+            </Link>
           </nav>
         </div>
       </aside>
