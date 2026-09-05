@@ -7,12 +7,14 @@ datasource db {
   provider = "postgresql"
 }
 
+// Enums audit operation and unit of measurement for materials
 enum AuditOperation {
   INCREMENT
   DECREMENT
   SET
 }
 
+// Unit of measurement for materials
 enum Unit {
   PCS
   BOX
@@ -22,6 +24,8 @@ enum Unit {
   OTHER
 }
 
+// Role model representing user roles in the system
+// Each role has a unique name and an optional description, and can be associated with multiple users.
 model Role {
   id          Int     @id @default(autoincrement())
   name        String  @unique
@@ -33,6 +37,8 @@ model Role {
   updatedAt DateTime @updatedAt
 }
 
+// User model representing users in the system
+// Each user has a unique username, a hashed password, and is associated with a role.
 model User {
   id           Int    @id @default(autoincrement())
   username     String @unique
@@ -53,6 +59,8 @@ model User {
   @@index([isActive])
 }
 
+// Session model representing user sessions in the system
+// Each session is associated with a user and has an expiration time, creation time, and last
 model Session {
   id     String @id
   userId Int
@@ -66,6 +74,8 @@ model Session {
   @@index([expiresAt])
 }
 
+// Category model representing categories of materials in the system
+// Each category has a unique name and an optional description, and can be associated with multiple materials
 model Category {
   id          Int     @id @default(autoincrement())
   name        String  @unique
@@ -77,6 +87,9 @@ model Category {
   updatedAt DateTime @updatedAt
 }
 
+// Material model representing materials in the system
+// Each material has a name, description, unit of measurement, minimum quantity, and is associated
+// with a category. Materials can have an inventory record and multiple inventory changes.
 model Material {
   id          Int     @id @default(autoincrement())
   name        String
@@ -103,6 +116,8 @@ model Material {
   @@index([name])
 }
 
+// Inventory model representing the current inventory of materials in the system
+// Each inventory record is associated with a material and tracks the quantity and version of the inventory.
 model Inventory {
   id Int @id @default(autoincrement())
 
@@ -116,6 +131,8 @@ model Inventory {
   updatedAt DateTime @updatedAt
 }
 
+// InventoryChange model representing changes to the inventory of materials in the system
+// Each inventory change is associated with a user and a material, and tracks the old quantity,
 model InventoryChange {
   id BigInt @id @default(autoincrement())
 
@@ -136,4 +153,18 @@ model InventoryChange {
   @@index([userId, createdAt])
   @@index([materialId, createdAt])
   @@index([createdAt])
+}
+
+// SystemSetting model representing system-wide settings in the system
+// Each system setting has a unique key, a value, and an optional description.
+model SystemSetting {
+  id          Int      @id @default(autoincrement())
+
+  key         String   @unique
+  value       String
+
+  description String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

@@ -291,7 +291,39 @@ async function main() {
       },
     });
   }
+await prisma.systemSetting.upsert({
+  where: {
+    key: "session_duration_hours",
+  },
+  update: {
+    value: "8",
+    description:
+      "Default authenticated session duration in hours",
+  },
+  create: {
+    key: "session_duration_hours",
+    value: "8",
+    description:
+      "Default authenticated session duration in hours",
+  },
+});
 
+await prisma.systemSetting.upsert({
+  where: {
+    key: "default_inventory_unit",
+  },
+  update: {
+    value: "PCS",
+    description:
+      "Default unit used when creating materials",
+  },
+  create: {
+    key: "default_inventory_unit",
+    value: "PCS",
+    description:
+      "Default unit used when creating materials",
+  },
+});
   console.log("Seed completed successfully.");
 
   console.log({
