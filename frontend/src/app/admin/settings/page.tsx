@@ -33,6 +33,9 @@ export default function AdminSettingsPage() {
   const [error, setError] =
     useState<string | null>(null);
 
+  const [success, setSuccess] =
+    useState<string | null>(null);
+
   async function loadSettings() {
     try {
       setError(null);
@@ -81,6 +84,7 @@ export default function AdminSettingsPage() {
     try {
       setSaving(setting.key);
       setError(null);
+      setSuccess(null);
 
       const response =
         await updateSetting(
@@ -96,6 +100,10 @@ export default function AdminSettingsPage() {
               ? response.setting
               : item,
           ),
+      );
+
+      setSuccess(
+        "Setting saved successfully",
       );
     } catch (error) {
       if (
@@ -138,6 +146,11 @@ export default function AdminSettingsPage() {
           {error}
         </div>
       )}
+      {success && (
+  <div className="mb-4 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">
+    {success}
+  </div>
+)}
 
       <div className="space-y-4">
         {settings.map(
