@@ -32,3 +32,6 @@ coverage/
 
 # SSL/TLS certificate
 nginx/certs/
+
+# Database backups
+backups/
