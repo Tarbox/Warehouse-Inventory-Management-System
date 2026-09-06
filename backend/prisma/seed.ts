@@ -2,7 +2,7 @@ import "dotenv/config";
 import argon2 from "argon2";
 
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "../src/generated/prisma/client";
+import { PrismaClient } from "../src/generated/prisma/client/client.js";
 
 function requireEnv(name: string): string {
   const value = process.env[name];
