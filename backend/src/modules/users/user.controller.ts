@@ -17,6 +17,7 @@ import {
   createUser,
   deleteUser,
   disableUser,
+  enableUser,
   listUsers,
   resetUserPassword,
 } from "./user.service.js";
@@ -160,6 +161,43 @@ export async function disableUserController(
   }
 }
 
+// Re-enable a previously disabled user account.
+export async function enableUserController(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
+  const params =
+    userIdParamSchema.safeParse(
+      request.params,
+    );
+
+  if (!params.success) {
+    return reply.status(400).send({
+      error: "VALIDATION_ERROR",
+      message: "Invalid user ID",
+    });
+  }
+
+  try {
+    await enableUser(
+      params.data.id,
+    );
+
+    return reply.status(204).send();
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message === "USER_NOT_FOUND"
+    ) {
+      return reply.status(404).send({
+        error: "USER_NOT_FOUND",
+        message: "User not found",
+      });
+    }
+
+    throw error;
+  }
+}
 // The changeUserRoleController function handles the HTTP request to change a user's role.
 export async function changeUserRoleController(
   request: FastifyRequest,

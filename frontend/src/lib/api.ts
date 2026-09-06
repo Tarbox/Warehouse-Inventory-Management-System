@@ -398,6 +398,17 @@ export async function disableUser(
   );
 }
 
+// Enable a disabled user in the Backend API.
+export async function enableUser(
+  id: number,
+) {
+  return request<void>(
+    `/api/users/${id}/enable`,
+    {
+      method: "POST",
+    },
+  );
+}
 // Enable a user in the Backend API by their ID.
 export async function changeUserRole(
   id: number,

@@ -14,6 +14,7 @@ import {
   createUserController,
   deleteUserController,
   disableUserController,
+  enableUserController,
   getUsersController,
   resetPasswordController,
 } from "./user.controller.js";
@@ -61,6 +62,11 @@ export async function userRoutes(
       protectedRoutes.post(
         "/users/:id/disable",
         disableUserController,
+      );
+
+      protectedRoutes.post(
+        "/users/:id/enable",
+        enableUserController,
       );
     },
   );

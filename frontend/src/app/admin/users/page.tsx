@@ -11,6 +11,7 @@ import {
   createUser,
   deleteUser,
   disableUser,
+  enableUser,
   getUsers,
   resetUserPassword,
   type AdminUser,
@@ -143,6 +144,36 @@ export default function AdminUsersPage() {
     }
   }
 
+  async function handleEnable(
+  user: AdminUser,
+) {
+  const confirmed =
+    window.confirm(
+      `Enable "${user.username}"?`,
+    );
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    await enableUser(
+      user.id,
+    );
+
+    await loadUsers();
+  } catch (error) {
+    if (
+      error instanceof ApiError
+    ) {
+      setError(error.message);
+    } else {
+      setError(
+        "Failed to enable user",
+      );
+    }
+  }
+}
 // The handleDelete function deletes a user permanently by calling the deleteUser API function.
 // It prompts the administrator for confirmation before proceeding and reloads the user list upon success.
   async function handleDelete(
@@ -415,19 +446,27 @@ export default function AdminUsersPage() {
                       )}
                     </td>
 
-                    <td className="px-4 py-3">
-                      <div className="flex justify-end gap-2">
-                        {user.isActive && (
+                    <td className="flex justify-end gap-2">
+                      <div className="flex gap-2">
+                        {user.isActive ? (
                           <button
                             type="button"
                             onClick={() =>
-                              handleDisable(
-                                user,
-                              )
+                              void handleDisable(user)
                             }
-                            className="rounded-lg border px-3 py-1.5 text-sm text-red-700"
+                            className="rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700"
                           >
                             Disable
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              void handleEnable(user)
+                            }
+                            className="rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700"
+                          >
+                            Enable
                           </button>
                         )}
 
