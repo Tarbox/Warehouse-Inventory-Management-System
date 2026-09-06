@@ -27,6 +27,7 @@ services:
 
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      CORS_ORIGIN: ${CORS_ORIGIN}
     expose:
       - "4000"
     depends_on:
@@ -65,7 +66,7 @@ services:
       timeout: 5s
       retries: 5
       start_period: 15s
-      
+
   nginx:
     image: nginx:alpine
     ports:
