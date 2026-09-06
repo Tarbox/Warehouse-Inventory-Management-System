@@ -13,30 +13,48 @@ export function addClient(
 ) {
   clients.add(socket);
 
+  console.log(
+    "Realtime client connected. Total:",
+    clients.size,
+  );
+
   socket.on("close", () => {
     clients.delete(socket);
+
+    console.log(
+      "Realtime client disconnected. Total:",
+      clients.size,
+    );
   });
 
   socket.on("error", () => {
     clients.delete(socket);
+
+    console.log(
+      "Realtime client error. Total:",
+      clients.size,
+    );
   });
 }
-
-// The function removes a WebSocket connection from the list of clients.
 export function removeClient(
   socket: WebSocket,
 ) {
   clients.delete(socket);
 }
 
-// The function broadcasts a RealtimeEvent to all connected WebSocket clients.
+// The function removes a WebSocket connection from the list of clients.
 export function broadcast(
   event: RealtimeEvent,
 ) {
-  // Convert the event to a JSON string.
   const message = JSON.stringify(event);
 
-// Send the message to all connected clients.
+  console.log(
+    "Broadcasting realtime event:",
+    event.type,
+    "connected clients:",
+    clients.size,
+  );
+
   for (const client of clients) {
     if (client.readyState === client.OPEN) {
       client.send(message);
