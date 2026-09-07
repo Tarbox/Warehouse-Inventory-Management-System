@@ -13,6 +13,7 @@ import {
   decrementInventory,
   getCurrentUser,
   getInventory,
+  setInventory,
   incrementInventory,
   logout,
   type InventoryItem,
@@ -39,6 +40,12 @@ export default function InventoryPage() {
 // State variable to hold the ID of the inventory item that is currently being updated (incremented or decremented).
   const [updatingId, setUpdatingId] =
     useState<number | null>(null);
+// State variable to hold the ID of the inventory item that is currently being edited (for setting a specific quantity).
+  const [editingId, setEditingId] =
+    useState<number | null>(null);
+
+  const [setQuantityValue, setSetQuantityValue] =
+    useState("");
 // State variable to hold any error messages that may occur during API requests or inventory updates.
   const [error, setError] =
     useState<string | null>(null);
@@ -122,6 +129,104 @@ useInventoryRealtime({
   useEffect(() => {
     load();
   }, []);
+
+  function startSetQuantity(item: InventoryItem) {
+  setEditingId(item.id);
+
+  setSetQuantityValue(
+    String(item.quantity),
+  );
+
+  setError(null);
+}
+
+  async function handleSetQuantity(
+  item: InventoryItem,
+) {
+  const quantity =
+    Number(setQuantityValue);
+
+  if (
+    !Number.isInteger(quantity) ||
+    quantity < 0
+  ) {
+    setError(
+      "Quantity must be a non-negative integer",
+    );
+
+    return;
+  }
+
+  setUpdatingId(item.id);
+  setError(null);
+
+  try {
+    const response =
+      await setInventory(
+        item.id,
+        quantity,
+        item.version,
+      );
+
+    setItems((currentItems) =>
+      currentItems.map((currentItem) => {
+        if (
+          currentItem.id !== item.id
+        ) {
+          return currentItem;
+        }
+
+        return {
+          ...currentItem,
+
+          quantity:
+            response.newQuantity,
+
+          version:
+            response.version,
+
+          lowStock:
+            response.newQuantity <=
+            currentItem.minimumQuantity,
+        };
+      }),
+    );
+
+    setEditingId(null);
+    setSetQuantityValue("");
+  } catch (error) {
+    if (
+      error instanceof ApiError &&
+      error.status === 401
+    ) {
+      router.replace("/login");
+      return;
+    }
+
+    if (
+      error instanceof ApiError &&
+      error.code === "VERSION_CONFLICT"
+    ) {
+      setError(
+        "Inventory was changed by another user. Please try again.",
+      );
+
+      await load();
+
+      return;
+    }
+
+    if (error instanceof ApiError) {
+      setError(error.message);
+    } else {
+      setError(
+        "Failed to set inventory quantity",
+      );
+    }
+  } finally {
+    setUpdatingId(null);
+  }
+}
 // The changeQuantity function is responsible for incrementing or decrementing the quantity of a specific inventory item. It updates the state to reflect the changes and handles any errors that may occur during the API requests.
   async function changeQuantity(
     materialId: number,
@@ -233,6 +338,17 @@ useInventoryRealtime({
               </p>
             )}
           </div>
+          
+          <div className="flex items-center gap-3">
+            {user?.role.name === "ADMIN" && (
+    <button
+      type="button"
+      onClick={() => router.push("/admin")}
+      className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700"
+    >
+      Admin Panel
+    </button>
+  )}
           <button
             type="button"
             onClick={handleLogout}
@@ -240,6 +356,7 @@ useInventoryRealtime({
           >
             Logout
           </button>
+        </div>
         </div>
       </header>
       <div className="mx-auto max-w-5xl px-4 py-6">
@@ -282,50 +399,110 @@ useInventoryRealtime({
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  disabled={
-                    updatingId === item.id ||
-                    item.quantity === 0
-                  }
-                  onClick={() =>
-                    changeQuantity(
-                      item.id,
-                      "decrement",
-                    )
-                  }
-                  className="h-10 w-10 rounded-lg border text-lg font-bold hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  −
-                </button>
-                <div className="min-w-24 text-center">
-                  <div className="text-lg font-bold">
-                    {item.quantity}
-                  </div>
 
-                  <div className="text-xs text-slate-500">
-                    {item.unit}
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  disabled={
-                    updatingId === item.id
-                  }
-                  onClick={() =>
-                    changeQuantity(
-                      item.id,
-                      "increment",
-                    )
-                  }
-                  className="h-10 w-10 rounded-lg border text-lg font-bold hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  +
-                </button>
+              <div className="flex items-center gap-3">
+                {editingId === item.id ? (
+                  <>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={setQuantityValue}
+                      onChange={(event) =>
+                        setSetQuantityValue(
+                          event.target.value,
+                        )
+                      }
+                      disabled={updatingId === item.id}
+                      className="w-24 rounded-lg border px-3 py-2 text-center"
+                    />
+
+                    <button
+                      type="button"
+                      disabled={updatingId === item.id}
+                      onClick={() =>
+                        handleSetQuantity(item)
+                      }
+                      className="rounded-lg bg-slate-900 px-3 py-2 text-sm text-white disabled:opacity-50"
+                    >
+                      Save
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={updatingId === item.id}
+                      onClick={() => {
+                        setEditingId(null);
+                        setSetQuantityValue("");
+                      }}
+                      className="rounded-lg border px-3 py-2 text-sm hover:bg-slate-50"
+                    >
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      disabled={
+                        updatingId === item.id ||
+                        item.quantity === 0
+                      }
+                      onClick={() =>
+                        changeQuantity(
+                          item.id,
+                          "decrement",
+                        )
+                      }
+                      className="h-10 w-10 rounded-lg border text-lg font-bold hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      −
+                    </button>
+
+                    <div className="min-w-24 text-center">
+                      <div className="text-lg font-bold">
+                        {item.quantity}
+                      </div>
+
+                      <div className="text-xs text-slate-500">
+                        {item.unit}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={
+                        updatingId === item.id
+                      }
+                      onClick={() =>
+                        changeQuantity(
+                          item.id,
+                          "increment",
+                        )
+                      }
+                      className="h-10 w-10 rounded-lg border text-lg font-bold hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      +
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={
+                        updatingId === item.id
+                      }
+                      onClick={() =>
+                        startSetQuantity(item)
+                      }
+                      className="rounded-lg border px-3 py-2 text-sm hover:bg-slate-50 disabled:opacity-50"
+                    >
+                      Set
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           ))}
+
           {filteredItems.length === 0 && (
             <div className="rounded-xl bg-white p-8 text-center text-slate-500">
               No materials found.

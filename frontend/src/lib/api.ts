@@ -195,7 +195,24 @@ export async function decrementInventory(
   );
 }
 
-// Set the inventory quantity for a specific material to a desired value.
+// Set the inventory quantity for a specific material.
+export async function setInventory(
+  materialId: number,
+  quantity: number,
+  expectedVersion: number,
+) {
+  return request<InventoryMutationResponse>(
+    `/api/inventory/${materialId}`,
+    {
+      method: "PUT",
+      body: JSON.stringify({
+        quantity,
+        expectedVersion,
+      }),
+    },
+  );
+}
+
 export type HistoryItem = {
   id: string;
 
