@@ -33,9 +33,12 @@ await app.register(cookie);
 await app.register(websocket);
 await app.register(rateLimit);
 await app.register(originCheck);
-const corsOrigin =
- process.env.CORS_ORIGIN ??
-"http://localhost:3000";
+const corsOrigin = (
+  process.env.CORS_ORIGIN ??
+  "http://localhost:3000"
+)
+  .split(",")
+  .map((origin) => origin.trim());
 await app.register(cors, {
   origin: corsOrigin,
   credentials: true,
