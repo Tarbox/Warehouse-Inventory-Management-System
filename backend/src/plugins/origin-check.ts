@@ -11,9 +11,12 @@ const MUTATING_METHODS = new Set([
 
 // The plugin reads the allowed origin from the environment variable CORS_ORIGIN.
 export default fp(async (app) => {
-  const allowedOrigin =
+  const allowedOrigin = (
     process.env.CORS_ORIGIN ??
-    "http://localhost:3000";
+    "http://localhost:3000"
+  )
+    .split(",")
+    .map((origin) => origin.trim());
 
 // The plugin adds a hook to the Fastify application that runs before each request is processed.
   app.addHook(
@@ -33,7 +36,7 @@ export default fp(async (app) => {
         return;
       }
 // If the origin does not match the allowed origin, the plugin responds with a 403 Forbidden status.
-      if (origin !== allowedOrigin) {
+      if (!allowedOrigin.includes(origin)) {
         return reply.status(403).send({
           error: "FORBIDDEN_ORIGIN",
           message: "Request origin is not allowed",
