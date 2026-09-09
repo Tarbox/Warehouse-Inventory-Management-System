@@ -50,6 +50,13 @@ export default function AdminLayout({
             >
               Settings
             </Link>
+
+            <Link
+              href="/admin/categories"
+              className="hover:underline"
+            >
+              Categories
+            </Link>
           </nav>
         </div>
       </aside>

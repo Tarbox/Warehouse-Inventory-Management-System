@@ -281,6 +281,57 @@ export async function getCategories() {
   );
 }
 
+// Input data structure for creating a category.
+export type CreateCategoryInput = {
+  name: string;
+  description?: string | null;
+};
+
+// Input data structure for updating a category.
+export type UpdateCategoryInput = {
+  name?: string;
+  description?: string | null;
+};
+
+// Create a new category in the Backend API.
+export async function createCategory(
+  input: CreateCategoryInput,
+) {
+  return request<Category>(
+    "/api/categories",
+    {
+      method: "POST",
+      body: JSON.stringify(input),
+    },
+  );
+}
+
+// Update an existing category in the Backend API.
+export async function updateCategory(
+  id: number,
+  input: UpdateCategoryInput,
+) {
+  return request<Category>(
+    `/api/categories/${id}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    },
+  );
+}
+
+// Delete a category from the Backend API by its ID.
+export async function deleteCategory(
+  id: number,
+) {
+  return request<void>(
+    `/api/categories/${id}`,
+    {
+      method: "DELETE",
+    },
+  );
+}
+
 
 // Input data structure for creating a new material in the Backend API.
 export type CreateMaterialInput = {
