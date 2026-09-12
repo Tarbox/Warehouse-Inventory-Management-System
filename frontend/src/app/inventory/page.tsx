@@ -21,6 +21,7 @@ import {
 } from "../../lib/api";
 // Import the useRouter hook from Next.js to handle navigation.
 import { useRouter } from "next/navigation";
+import AppShell from "../../components/layout/AppShell";
 
 // The InventoryPage component is the main page for managing the warehouse inventory. It displays a list of materials, their quantities, and allows users to increment or decrement the inventory.
 export default function InventoryPage() {
@@ -323,193 +324,259 @@ useInventoryRealtime({
   }
 
   return (
-    <main className="min-h-screen bg-slate-100">
-      <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-          <div>
-            <h1 className="text-xl font-bold">
-              📦 Warehouse Inventory
-            </h1>
+  <AppShell isAdmin={user?.role.name === "ADMIN"}>
+    <div>
+      {/* Page header */}
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">
+            Inventory
+          </h1>
 
-            {user && (// If the user is logged in, display their username and role in the header.
-              <p className="text-sm text-slate-500">
-                {user.username} ·{" "}
+          <p className="mt-1 text-sm text-slate-500">
+            Manage warehouse materials and quantities.
+          </p>
+        </div>
+
+        {user && (
+          <div className="flex items-center gap-3">
+            <div className="text-right">
+              <p className="text-sm font-medium text-slate-900">
+                {user.username}
+              </p>
+
+              <p className="text-xs text-slate-500">
                 {user.role.name}
               </p>
-            )}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              Logout
+            </button>
           </div>
-          
-          <div className="flex items-center gap-3">
-            {user?.role.name === "ADMIN" && (
-    <button
-      type="button"
-      onClick={() => router.push("/admin")}
-      className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700"
-    >
-      Admin Panel
-    </button>
-  )}
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="rounded-lg border px-3 py-2 text-sm hover:bg-slate-50"
-          >
-            Logout
-          </button>
-        </div>
-        </div>
-      </header>
-      <div className="mx-auto max-w-5xl px-4 py-6">
-        <div className="mb-6">
+        )}
+      </div>
+
+      {/* Toolbar */}
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row">
+        <div className="flex-1">
           <input
             type="search"
             placeholder="Search materials..."
             value={search}
             onChange={(event) =>
-              setSearch(
-                event.target.value,
-              )
+              setSearch(event.target.value)
             }
-            className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 outline-none focus:border-slate-500"
+            className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
           />
         </div>
-        {error && (
-          <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-            {error}
-          </div>
-        )}
-        <div className="space-y-3">
-          {filteredItems.map((item) => (
-            <div
-              key={item.id}
-              className="flex flex-col gap-4 rounded-xl bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div>
-                <h2 className="font-semibold">
-                  {item.name}
-                </h2>
+      </div>
 
-                <p className="text-sm text-slate-500">
-                  {item.category.name}
-                </p>
+      {/* Error */}
+      {error && (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
 
-                {item.lowStock && (
-                  <span className="mt-2 inline-block rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700">
-                    LOW STOCK
-                  </span>
-                )}
-              </div>
+      {/* Inventory table */}
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[800px] text-sm">
+            <thead className="border-b border-slate-200 bg-slate-50">
+              <tr className="text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <th className="px-5 py-3">
+                  Item
+                </th>
 
-              <div className="flex items-center gap-3">
-                {editingId === item.id ? (
-                  <>
-                    <input
-                      type="number"
-                      min="0"
-                      step="1"
-                      value={setQuantityValue}
-                      onChange={(event) =>
-                        setSetQuantityValue(
-                          event.target.value,
-                        )
-                      }
-                      disabled={updatingId === item.id}
-                      className="w-24 rounded-lg border px-3 py-2 text-center"
-                    />
+                <th className="px-5 py-3">
+                  Category
+                </th>
 
-                    <button
-                      type="button"
-                      disabled={updatingId === item.id}
-                      onClick={() =>
-                        handleSetQuantity(item)
-                      }
-                      className="rounded-lg bg-slate-900 px-3 py-2 text-sm text-white disabled:opacity-50"
-                    >
-                      Save
-                    </button>
+                <th className="px-5 py-3 text-center">
+                  Quantity
+                </th>
 
-                    <button
-                      type="button"
-                      disabled={updatingId === item.id}
-                      onClick={() => {
-                        setEditingId(null);
-                        setSetQuantityValue("");
-                      }}
-                      className="rounded-lg border px-3 py-2 text-sm hover:bg-slate-50"
-                    >
-                      Cancel
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      type="button"
-                      disabled={
-                        updatingId === item.id ||
-                        item.quantity === 0
-                      }
-                      onClick={() =>
-                        changeQuantity(
-                          item.id,
-                          "decrement",
-                        )
-                      }
-                      className="h-10 w-10 rounded-lg border text-lg font-bold hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      −
-                    </button>
+                <th className="px-5 py-3">
+                  Status
+                </th>
 
-                    <div className="min-w-24 text-center">
-                      <div className="text-lg font-bold">
-                        {item.quantity}
-                      </div>
+                <th className="px-5 py-3 text-right">
+                  Actions
+                </th>
+              </tr>
+            </thead>
 
-                      <div className="text-xs text-slate-500">
-                        {item.unit}
-                      </div>
+            <tbody className="divide-y divide-slate-100">
+              {filteredItems.map((item) => (
+                <tr
+                  key={item.id}
+                  className="hover:bg-slate-50"
+                >
+                  {/* Item */}
+                  <td className="px-5 py-4">
+                    <div className="font-medium text-slate-900">
+                      {item.name}
                     </div>
 
-                    <button
-                      type="button"
-                      disabled={
-                        updatingId === item.id
-                      }
-                      onClick={() =>
-                        changeQuantity(
-                          item.id,
-                          "increment",
-                        )
-                      }
-                      className="h-10 w-10 rounded-lg border text-lg font-bold hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      +
-                    </button>
+                    <div className="mt-1 text-xs text-slate-400">
+                      Minimum: {item.minimumQuantity}{" "}
+                      {item.unit}
+                    </div>
+                  </td>
 
-                    <button
-                      type="button"
-                      disabled={
-                        updatingId === item.id
-                      }
-                      onClick={() =>
-                        startSetQuantity(item)
-                      }
-                      className="rounded-lg border px-3 py-2 text-sm hover:bg-slate-50 disabled:opacity-50"
-                    >
-                      Set
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          ))}
+                  {/* Category */}
+                  <td className="px-5 py-4 text-slate-600">
+                    {item.category.name}
+                  </td>
 
-          {filteredItems.length === 0 && (
-            <div className="rounded-xl bg-white p-8 text-center text-slate-500">
-              No materials found.
-            </div>
-          )}
+                  {/* Quantity */}
+                  <td className="px-5 py-4">
+                    {editingId === item.id ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={setQuantityValue}
+                          onChange={(event) =>
+                            setSetQuantityValue(
+                              event.target.value,
+                            )
+                          }
+                          disabled={
+                            updatingId === item.id
+                          }
+                          className="w-20 rounded-lg border border-slate-300 px-2 py-1.5 text-center outline-none focus:border-slate-500"
+                        />
+
+                        <button
+                          type="button"
+                          disabled={
+                            updatingId === item.id
+                          }
+                          onClick={() =>
+                            handleSetQuantity(item)
+                          }
+                          className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+                        >
+                          Save
+                        </button>
+
+                        <button
+                          type="button"
+                          disabled={
+                            updatingId === item.id
+                          }
+                          onClick={() => {
+                            setEditingId(null);
+                            setSetQuantityValue("");
+                          }}
+                          className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          disabled={
+                            updatingId === item.id ||
+                            item.quantity === 0
+                          }
+                          onClick={() =>
+                            changeQuantity(
+                              item.id,
+                              "decrement",
+                            )
+                          }
+                          className="h-8 w-8 rounded-lg border border-slate-300 font-bold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          −
+                        </button>
+
+                        <div className="w-16 text-center">
+                          <div className="font-semibold text-slate-900">
+                            {item.quantity}
+                          </div>
+
+                          <div className="text-xs text-slate-400">
+                            {item.unit}
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          disabled={
+                            updatingId === item.id
+                          }
+                          onClick={() =>
+                            changeQuantity(
+                              item.id,
+                              "increment",
+                            )
+                          }
+                          className="h-8 w-8 rounded-lg border border-slate-300 font-bold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          +
+                        </button>
+                      </div>
+                    )}
+                  </td>
+
+                  {/* Status */}
+                  <td className="px-5 py-4">
+                    {item.lowStock ? (
+                      <span className="inline-flex rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700">
+                        Low Stock
+                      </span>
+                    ) : (
+                      <span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">
+                        In Stock
+                      </span>
+                    )}
+                  </td>
+
+                  {/* Actions */}
+                  <td className="px-5 py-4 text-right">
+                    {editingId !== item.id && (
+                      <button
+                        type="button"
+                        disabled={
+                          updatingId === item.id
+                        }
+                        onClick={() =>
+                          startSetQuantity(item)
+                        }
+                        className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                      >
+                        Set Quantity
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+
+              {filteredItems.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-5 py-12 text-center text-sm text-slate-500"
+                  >
+                    No materials found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
-    </main>
+    </div>
+  </AppShell>
   );
 }
