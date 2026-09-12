@@ -1,4 +1,9 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
+import AppNavigation from "./AppNavigation";
+import MobileNavigation from "./MobileNavigation";
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -9,84 +14,76 @@ export default function AppShell({
   children,
   isAdmin = false,
 }: AppShellProps) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-slate-100">
       {/* Global application header */}
       <header className="border-b border-slate-800 bg-slate-900 text-white">
-        <div className="flex h-16 items-center justify-between px-6">
-          <Link
-            href="/inventory"
-            className="text-lg font-semibold tracking-tight"
-          >
-            Warehouse Inventory
-          </Link>
-        </div>
-      </header>
+  <div className="flex h-16 items-center justify-between px-4 sm:px-6">
+    <div className="flex items-center gap-3">
+      <button
+        type="button"
+        onClick={() => setMobileOpen(true)}
+        className="rounded-lg p-2 text-slate-300 hover:bg-slate-800 hover:text-white md:hidden"
+        aria-label="Open navigation"
+      >
+        <span className="text-xl">☰</span>
+      </button>
+
+      <Link
+        href="/inventory"
+        className="text-lg font-semibold tracking-tight"
+      >
+        Warehouse Inventory
+      </Link>
+    </div>
+  </div>
+</header>
 
       <div className="flex min-h-[calc(100vh-4rem)]">
         {/* Application navigation */}
-        <aside className="w-60 shrink-0 border-r border-slate-200 bg-white">
-          <div className="p-4">
-            <p className="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Navigation
-            </p>
+        <aside className="hidden w-60 shrink-0 border-r border-slate-200 bg-white md:block">
+  <div className="p-4">
+    <AppNavigation isAdmin={isAdmin} />
+  </div>
+</aside>
+{mobileOpen && (
+  <div className="fixed inset-0 z-50 md:hidden">
+    {/* Overlay */}
+    <button
+      type="button"
+      aria-label="Close navigation"
+      onClick={() => setMobileOpen(false)}
+      className="absolute inset-0 bg-black/40"
+    />
 
-            <nav className="space-y-1">
-              <Link
-                href="/inventory"
-                className="block rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
-              >
-                Inventory
-              </Link>
+    {/* Drawer */}
+    <aside className="relative h-full w-72 bg-white shadow-xl">
+      <div className="flex h-16 items-center justify-between border-b border-slate-200 px-4">
+        <span className="font-semibold text-slate-900">
+          Navigation
+        </span>
 
-              {isAdmin && (
-                <>
-                  <Link
-                    href="/admin"
-                    className="block rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
-                  >
-                    Dashboard
-                  </Link>
+        <button
+          type="button"
+          onClick={() => setMobileOpen(false)}
+          className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+          aria-label="Close navigation"
+        >
+          ✕
+        </button>
+      </div>
 
-                  <Link
-                    href="/admin/categories"
-                    className="block rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
-                  >
-                    Categories
-                  </Link>
-
-                  <Link
-                    href="/admin/materials"
-                    className="block rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
-                  >
-                    Materials
-                  </Link>
-
-                  <Link
-                    href="/admin/users"
-                    className="block rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
-                  >
-                    Users
-                  </Link>
-
-                  <Link
-                    href="/admin/history"
-                    className="block rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
-                  >
-                    History
-                  </Link>
-
-                  <Link
-                    href="/admin/settings"
-                    className="block rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
-                  >
-                    Settings
-                  </Link>
-                </>
-              )}
-            </nav>
-          </div>
-        </aside>
+      <div className="p-4">
+        <MobileNavigation
+          isAdmin={isAdmin}
+          onNavigate={() => setMobileOpen(false)}
+        />
+      </div>
+    </aside>
+  </div>
+)}
 
         {/* Page content */}
         <main className="min-w-0 flex-1 p-6">
