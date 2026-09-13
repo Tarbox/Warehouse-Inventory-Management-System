@@ -21,6 +21,8 @@ import {
   incrementInventory,
   setInventory,
   logout,
+  type InventorySortBy,
+  type InventorySortOrder,
   type InventoryItem,
   type User,
 } from "../../lib/api";
@@ -42,6 +44,12 @@ export default function InventoryPage() {
   const [search, setSearch] =
     useState("");
 
+  const [sortBy, setSortBy] =
+    useState<InventorySortBy>("name");
+
+  const [sortOrder, setSortOrder] =
+    useState<InventorySortOrder>("asc");
+
   const [loading, setLoading] =
     useState(true);
 
@@ -57,15 +65,22 @@ export default function InventoryPage() {
   const [error, setError] =
     useState<string | null>(null);
 
-  // Load the authenticated user and current inventory.
-  async function load() {
+  
+  const load = useCallback(
+  async (
+    currentSortBy: InventorySortBy = sortBy,
+    currentSortOrder: InventorySortOrder = sortOrder,
+  ) => {
     try {
       setError(null);
 
       const [userResponse, inventoryResponse] =
         await Promise.all([
           getCurrentUser(),
-          getInventory(),
+          getInventory(
+            currentSortBy,
+            currentSortOrder,
+          ),
         ]);
 
       setUser(userResponse.user);
@@ -83,7 +98,9 @@ export default function InventoryPage() {
     } finally {
       setLoading(false);
     }
-  }
+  },
+  [router, sortBy, sortOrder],
+);
 
   // Apply realtime updates only when the received version
   // is newer than the current local version.
@@ -135,7 +152,7 @@ export default function InventoryPage() {
   // Load initial page data.
   useEffect(() => {
     load();
-  }, []);
+  }, [load]);
 
   // Start editing an exact quantity.
   function startSetQuantity(
@@ -306,6 +323,34 @@ export default function InventoryPage() {
     router.refresh();
   }
 
+  function handleSort(
+  column: InventorySortBy,
+) {
+  if (sortBy === column) {
+    setSortOrder((currentOrder) =>
+      currentOrder === "asc"
+        ? "desc"
+        : "asc",
+    );
+
+    return;
+  }
+
+  setSortBy(column);
+  setSortOrder("asc");
+}
+
+  function sortIndicator(
+  column: InventorySortBy,
+) {
+  if (sortBy !== column) {
+    return "↕";
+  }
+
+  return sortOrder === "asc"
+    ? "↑"
+    : "↓";
+}
   // Filter materials by name.
   const filteredItems =
     items.filter((item) =>
@@ -400,20 +445,62 @@ export default function InventoryPage() {
               <thead className="border-b border-slate-200 bg-slate-50">
                 <tr className="text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                   <th className="px-5 py-3">
-                    {t.inventory.item}
-                  </th>
+  <button
+    type="button"
+    onClick={() => handleSort("name")}
+    className="inline-flex items-center gap-1 hover:text-slate-900"
+  >
+    {t.inventory.item}
+    <span aria-hidden="true">
+      {sortIndicator("name")}
+    </span>
+  </button>
+</th>
 
                   <th className="px-5 py-3">
-                    {t.inventory.category}
-                  </th>
+  <button
+    type="button"
+    onClick={() =>
+      handleSort("category")
+    }
+    className="inline-flex items-center gap-1 hover:text-slate-900"
+  >
+    {t.inventory.category}
+    <span aria-hidden="true">
+      {sortIndicator("category")}
+    </span>
+  </button>
+</th>
 
                   <th className="px-5 py-3 text-center">
-                    {t.inventory.quantity}
-                  </th>
+  <button
+    type="button"
+    onClick={() =>
+      handleSort("quantity")
+    }
+    className="inline-flex items-center gap-1 hover:text-slate-900"
+  >
+    {t.inventory.quantity}
+    <span aria-hidden="true">
+      {sortIndicator("quantity")}
+    </span>
+  </button>
+</th>
 
                   <th className="px-5 py-3">
-                    {t.inventory.status}
-                  </th>
+  <button
+    type="button"
+    onClick={() =>
+      handleSort("status")
+    }
+    className="inline-flex items-center gap-1 hover:text-slate-900"
+  >
+    {t.inventory.status}
+    <span aria-hidden="true">
+      {sortIndicator("status")}
+    </span>
+  </button>
+</th>
 
                   <th className="px-5 py-3 text-right">
                     {t.inventory.actions}

@@ -17,12 +17,27 @@ export const listMaterialsQuerySchema = z.object({
     .positive()
     .optional(),
 
-  // HTTP query parameters arrive as strings.
   // Convert "true" / "false" into actual boolean values.
   lowStock: z
     .enum(["true", "false"])
     .transform((value) => value === "true")
     .optional(),
+
+  // Field used to sort the material list.
+  // The actual sorting is performed by the backend/database.
+  sortBy: z
+    .enum([
+      "name",
+      "category",
+      "quantity",
+      "status",
+    ])
+    .default("name"),
+
+  // Sorting direction.
+  sortOrder: z
+    .enum(["asc", "desc"])
+    .default("asc"),
 
   // Convert page to a number.
   // If the client does not provide it, page 1 is used.
@@ -94,6 +109,7 @@ export const updateMaterialSchema =
       initialQuantity: true,
     })
     .partial();
+
 // Generate the TypeScript type directly from the Zod schema.
 export type ListMaterialsQuery = z.infer<
   typeof listMaterialsQuerySchema

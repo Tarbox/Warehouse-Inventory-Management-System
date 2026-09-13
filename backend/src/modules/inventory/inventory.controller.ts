@@ -7,6 +7,7 @@ import {
   inventoryAmountSchema,
   materialIdParamSchema,
   setInventorySchema,
+  listInventoryQuerySchema
 } from "./inventory.schema.js";
 
 import {
@@ -16,10 +17,23 @@ import {
 } from "./inventory.service.js";
 
 export async function getInventoryController(
-  _request: FastifyRequest,
+  request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  const inventory = await listInventory();
+  const query =
+    listInventoryQuerySchema.safeParse(
+      request.query,
+    );
+
+  if (!query.success) {
+    return reply.status(400).send({
+      error: "VALIDATION_ERROR",
+      message: "Invalid inventory query",
+    });
+  }
+
+  const inventory =
+    await listInventory(query.data);
 
   return reply.send({
     items: inventory,

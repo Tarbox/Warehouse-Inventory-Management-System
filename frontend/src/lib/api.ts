@@ -32,6 +32,16 @@ export type InventoryMutationResponse = {
   version: number;
 };
 
+export type InventorySortBy =
+  | "name"
+  | "category"
+  | "quantity"
+  | "status";
+
+export type InventorySortOrder =
+  | "asc"
+  | "desc";
+
 // Generic HTTP request helper used by all API functions. 
 // Handles credentials, JSON headers, response parsing, 
 // and conversion of API errors into ApiError instances.
@@ -155,9 +165,17 @@ export async function getCurrentUser() {
 }
 
 // Retrieve the current inventory list from the Backend.
-export async function getInventory() {
+export async function getInventory(
+  sortBy: InventorySortBy = "name",
+  sortOrder: InventorySortOrder = "asc",
+) {
+  const params = new URLSearchParams({
+    sortBy,
+    sortOrder,
+  });
+
   return request<InventoryResponse>(
-    "/api/inventory",
+    `/api/inventory?${params.toString()}`,
   );
 }
 

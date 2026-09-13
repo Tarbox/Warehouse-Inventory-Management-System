@@ -7,9 +7,32 @@ import {
   broadcast,
 } from "../realtime/realtime.manager.js";
 import { prisma } from "../../lib/prisma.js";
+import type { ListInventoryQuery } from "./inventory.schema.js";
 
 // The function retrieves a list of active materials along with their inventory information from the database.
-export async function listInventory() {
+export async function listInventory(
+  query: ListInventoryQuery,
+) {
+
+  const { sortBy, sortOrder } = query;
+
+  const orderBy: Prisma.MaterialOrderByWithRelationInput =
+    sortBy === "category"
+      ? {
+          category: {
+            name: sortOrder,
+          },
+        }
+      : sortBy === "quantity"
+        ? {
+            inventory: {
+              quantity: sortOrder,
+            },
+          }
+        : {
+            name: sortOrder,
+          };
+
   const materials =
     await prisma.material.findMany({
       where: {
@@ -21,37 +44,45 @@ export async function listInventory() {
         inventory: true,
       },
 
-      orderBy: {
-        name: "asc",
-      },
+      orderBy,
     });
   // Map the retrieved materials to the InventoryItem type and return the result.
-  return materials.map((material) => {
-    const quantity =
-      material.inventory?.quantity ?? 0;
+  const items = materials.map((material) => {
+  const quantity = material.inventory?.quantity ?? 0;
 
-    return {
-      id: material.id,
-      name: material.name,
-      description: material.description,
-      unit: material.unit,
+  return {
+    id: material.id,
+    name: material.name,
+    description: material.description,
+    unit: material.unit,
+    category: {
+      id: material.category.id,
+      name: material.category.name,
+    },
+    quantity,
+    minimumQuantity: material.minimumQuantity,
+    lowStock: quantity <= material.minimumQuantity,
+    version: material.inventory?.version ?? 0,
+  };
+});
 
-      category: {
-        id: material.category.id,
-        name: material.category.name,
-      },
+if (sortBy === "status") {
+  items.sort((a, b) => {
+    const aValue = a.lowStock ? 1 : 0;
+    const bValue = b.lowStock ? 1 : 0;
 
-      quantity,
-      minimumQuantity:
-        material.minimumQuantity,
+    if (aValue !== bValue) {
+      return sortOrder === "asc"
+        ? aValue - bValue
+        : bValue - aValue;
+    }
 
-      lowStock:
-        quantity <= material.minimumQuantity,
-
-      version:
-        material.inventory?.version ?? 0,
-    };
+    // Keep the order deterministic when both items have the same status.
+    return a.name.localeCompare(b.name);
   });
+}
+
+return items;
 }
 // The function retrieves the inventory information for a specific material by its ID.
 type AdjustInventoryInput = {

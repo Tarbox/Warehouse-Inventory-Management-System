@@ -28,6 +28,19 @@ export const setInventorySchema = z.object({
     .positive(),
 });
 
+export const listInventoryQuerySchema = z.object({
+  sortBy: z
+    .enum(["name", "category", "quantity", "status"])
+    .default("name"),
+
+  sortOrder: z
+    .enum(["asc", "desc"])
+    .default("asc"),
+});
+
+export type ListInventoryQuery =
+  z.infer<typeof listInventoryQuerySchema>;
+
 export type InventoryAmountInput =
   z.infer<typeof inventoryAmountSchema>;
 
