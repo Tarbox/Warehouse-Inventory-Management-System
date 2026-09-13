@@ -20,6 +20,8 @@ export const cs = {
     openNavigation: "Otevřít navigaci",
     closeNavigation: "Zavřít navigaci",
     navigation: "Navigace",
+    logout: "Odhlásit se",
+    clear: "vymazat"
   },
 
   login: {
@@ -104,5 +106,9 @@ dashboard: {
   materialsCount: "materiálů",
   loading: "Načítání přehledu...",
   loadError: "Nepodařilo se načíst přehled",
+  viewInventory: "Zobrazit inventář",
+  viewCategories: "Zobrazit kategorie",
+  viewLowStock: "Zobrazit položky s nízkým stavem",
+  noCategories: "Nejsou k dispozici žádné kategorie",
 }
 } as const;

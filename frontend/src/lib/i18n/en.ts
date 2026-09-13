@@ -20,6 +20,8 @@ export const en = {
     openNavigation: "Open navigation",
     closeNavigation: "Close navigation",
     navigation: "Navigation",
+    logout: "Logout",
+    clear: "clear",
   },
 
   login: {
@@ -104,5 +106,9 @@ dashboard: {
   materialsCount: "materials",
   loading: "Loading dashboard...",
   loadError: "Failed to load dashboard",
+  viewInventory: "View inventory",
+  viewCategories: "View categories",
+  viewLowStock: "View low stock",
+  noCategories: "No categories available",
 }
 } as const;

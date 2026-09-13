@@ -1,11 +1,13 @@
 "use client";
 
 import {
-  useEffect,
   useCallback,
+  useEffect,
   useState,
 } from "react";
-import { useRouter } from "next/navigation";
+
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 import {
   useInventoryRealtime,
@@ -31,9 +33,29 @@ import AppShell from "../../components/layout/AppShell";
 
 // InventoryPage is the main inventory management screen.
 // The business logic is shared between desktop and mobile layouts.
+
 export default function InventoryPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-slate-100">
+          <p className="text-slate-500">
+            Loading inventory...
+          </p>
+        </main>
+      }
+    >
+      <InventoryContent />
+    </Suspense>
+  );
+}
+function InventoryContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t } = useLocale();
+
+  const lowStockOnly =
+    searchParams.get("lowStock") === "true";
 
   const [user, setUser] =
     useState<User | null>(null);
@@ -65,42 +87,41 @@ export default function InventoryPage() {
   const [error, setError] =
     useState<string | null>(null);
 
-  
   const load = useCallback(
-  async (
-    currentSortBy: InventorySortBy = sortBy,
-    currentSortOrder: InventorySortOrder = sortOrder,
-  ) => {
-    try {
-      setError(null);
+    async (
+      currentSortBy: InventorySortBy = sortBy,
+      currentSortOrder: InventorySortOrder = sortOrder,
+    ) => {
+      try {
+        setError(null);
 
-      const [userResponse, inventoryResponse] =
-        await Promise.all([
-          getCurrentUser(),
-          getInventory(
-            currentSortBy,
-            currentSortOrder,
-          ),
-        ]);
+        const [userResponse, inventoryResponse] =
+          await Promise.all([
+            getCurrentUser(),
+            getInventory(
+              currentSortBy,
+              currentSortOrder,
+            ),
+          ]);
 
-      setUser(userResponse.user);
-      setItems(inventoryResponse.items);
-    } catch (error) {
-      if (
-        error instanceof ApiError &&
-        error.status === 401
-      ) {
-        router.replace("/login");
-        return;
+        setUser(userResponse.user);
+        setItems(inventoryResponse.items);
+      } catch (error) {
+        if (
+          error instanceof ApiError &&
+          error.status === 401
+        ) {
+          router.replace("/login");
+          return;
+        }
+
+        setError("Failed to load inventory");
+      } finally {
+        setLoading(false);
       }
-
-      setError("Failed to load inventory");
-    } finally {
-      setLoading(false);
-    }
-  },
-  [router, sortBy, sortOrder],
-);
+    },
+    [router, sortBy, sortOrder],
+  );
 
   // Apply realtime updates only when the received version
   // is newer than the current local version.
@@ -178,7 +199,9 @@ export default function InventoryPage() {
       !Number.isInteger(quantity) ||
       quantity < 0
     ) {
-      setError(t.inventory.setQuantityError);
+      setError(
+        t.inventory.setQuantityError,
+      );
 
       return;
     }
@@ -230,7 +253,9 @@ export default function InventoryPage() {
         error instanceof ApiError &&
         error.code === "VERSION_CONFLICT"
       ) {
-        setError(t.inventory.versionConflict);
+        setError(
+          t.inventory.versionConflict,
+        );
 
         await load();
 
@@ -240,7 +265,9 @@ export default function InventoryPage() {
       if (error instanceof ApiError) {
         setError(error.message);
       } else {
-        setError(t.inventory.setQuantityError);
+        setError(
+          t.inventory.setQuantityError,
+        );
       }
     } finally {
       setUpdatingId(null);
@@ -308,7 +335,9 @@ export default function InventoryPage() {
       if (error instanceof ApiError) {
         setError(error.message);
       } else {
-        setError(t.inventory.quantityValidation);
+        setError(
+          t.inventory.quantityValidation,
+        );
       }
     } finally {
       setUpdatingId(null);
@@ -324,57 +353,68 @@ export default function InventoryPage() {
   }
 
   function handleSort(
-  column: InventorySortBy,
-) {
-  if (sortBy === column) {
-    setSortOrder((currentOrder) =>
-      currentOrder === "asc"
-        ? "desc"
-        : "asc",
-    );
+    column: InventorySortBy,
+  ) {
+    if (sortBy === column) {
+      setSortOrder((currentOrder) =>
+        currentOrder === "asc"
+          ? "desc"
+          : "asc",
+      );
 
-    return;
+      return;
+    }
+
+    setSortBy(column);
+    setSortOrder("asc");
   }
 
-  setSortBy(column);
-  setSortOrder("asc");
-}
+  function handleMobileSortChange(
+    event: React.ChangeEvent<HTMLSelectElement>,
+  ) {
+    const column =
+      event.target.value as InventorySortBy;
 
-function handleMobileSortChange(
-  event: React.ChangeEvent<HTMLSelectElement>,
-) {
-  const column =
-    event.target.value as InventorySortBy;
+    if (column === sortBy) {
+      return;
+    }
 
-  if (column === sortBy) {
-    return;
+    setSortBy(column);
+    setSortOrder("asc");
   }
-
-  setSortBy(column);
-  setSortOrder("asc");
-}
 
   function sortIndicator(
-  column: InventorySortBy,
-) {
-  if (sortBy !== column) {
-    return "↕";
+    column: InventorySortBy,
+  ) {
+    if (sortBy !== column) {
+      return "↕";
+    }
+
+    return sortOrder === "asc"
+      ? "↑"
+      : "↓";
   }
 
-  return sortOrder === "asc"
-    ? "↑"
-    : "↓";
-}
-
-  // Filter materials by name.
+  // Filter materials by name and optionally
+  // by low-stock status from the URL.
   const filteredItems =
-    items.filter((item) =>
-      item.name
-        .toLowerCase()
-        .includes(
-          search.toLowerCase(),
-        ),
-    );
+    items.filter((item) => {
+      const matchesSearch =
+        item.name
+          .toLowerCase()
+          .includes(
+            search.toLowerCase(),
+          );
+
+      const matchesLowStock =
+        !lowStockOnly ||
+        item.lowStock;
+
+      return (
+        matchesSearch &&
+        matchesLowStock
+      );
+    });
 
   if (loading) {
     return (
@@ -432,7 +472,9 @@ function handleMobileSortChange(
         <div className="mb-4">
           <input
             type="search"
-            placeholder={t.inventory.searchPlaceholder}
+            placeholder={
+              t.inventory.searchPlaceholder
+            }
             value={search}
             onChange={(event) =>
               setSearch(
@@ -442,45 +484,73 @@ function handleMobileSortChange(
             className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
           />
         </div>
-{/* Mobile sorting */}
-<div className="mb-4 flex gap-2 md:hidden">
-  <select
-    value={sortBy}
-    onChange={handleMobileSortChange}
-    className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
-  >
-    <option value="name">
-      {t.inventory.item}
-    </option>
 
-    <option value="category">
-      {t.inventory.category}
-    </option>
+        {/* Active low-stock filter */}
+        {lowStockOnly && (
+          <div className="mb-4 flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-4 py-3">
+            <span className="text-sm font-medium text-red-700">
+              {t.inventory.lowStock}
+            </span>
 
-    <option value="quantity">
-      {t.inventory.quantity}
-    </option>
+            <button
+              type="button"
+              onClick={() =>
+                router.push(
+                  "/inventory",
+                )
+              }
+              className="text-sm font-medium text-red-700 underline hover:no-underline"
+            >
+              Clear
+            </button>
+          </div>
+        )}
 
-    <option value="status">
-      {t.inventory.status}
-    </option>
-  </select>
+        {/* Mobile sorting */}
+        <div className="mb-4 flex gap-2 md:hidden">
+          <select
+            value={sortBy}
+            onChange={
+              handleMobileSortChange
+            }
+            className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+          >
+            <option value="name">
+              {t.inventory.item}
+            </option>
 
-  <button
-    type="button"
-    onClick={() =>
-      setSortOrder((currentOrder) =>
-        currentOrder === "asc"
-          ? "desc"
-          : "asc",
-      )
-    }
-    className="min-w-12 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
-    aria-label="Toggle sort order"
-  >
-    {sortOrder === "asc" ? "↑" : "↓"}
-  </button>
-</div>
+            <option value="category">
+              {t.inventory.category}
+            </option>
+
+            <option value="quantity">
+              {t.inventory.quantity}
+            </option>
+
+            <option value="status">
+              {t.inventory.status}
+            </option>
+          </select>
+
+          <button
+            type="button"
+            onClick={() =>
+              setSortOrder(
+                (currentOrder) =>
+                  currentOrder === "asc"
+                    ? "desc"
+                    : "asc",
+              )
+            }
+            className="min-w-12 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            aria-label="Toggle sort order"
+          >
+            {sortOrder === "asc"
+              ? "↑"
+              : "↓"}
+          </button>
+        </div>
+
         {/* Error */}
         {error && (
           <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -498,62 +568,82 @@ function handleMobileSortChange(
               <thead className="border-b border-slate-200 bg-slate-50">
                 <tr className="text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                   <th className="px-5 py-3">
-  <button
-    type="button"
-    onClick={() => handleSort("name")}
-    className="inline-flex items-center gap-1 hover:text-slate-900"
-  >
-    {t.inventory.item}
-    <span aria-hidden="true">
-      {sortIndicator("name")}
-    </span>
-  </button>
-</th>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleSort("name")
+                      }
+                      className="inline-flex items-center gap-1 hover:text-slate-900"
+                    >
+                      {t.inventory.item}
+
+                      <span aria-hidden="true">
+                        {sortIndicator(
+                          "name",
+                        )}
+                      </span>
+                    </button>
+                  </th>
 
                   <th className="px-5 py-3">
-  <button
-    type="button"
-    onClick={() =>
-      handleSort("category")
-    }
-    className="inline-flex items-center gap-1 hover:text-slate-900"
-  >
-    {t.inventory.category}
-    <span aria-hidden="true">
-      {sortIndicator("category")}
-    </span>
-  </button>
-</th>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleSort(
+                          "category",
+                        )
+                      }
+                      className="inline-flex items-center gap-1 hover:text-slate-900"
+                    >
+                      {t.inventory.category}
+
+                      <span aria-hidden="true">
+                        {sortIndicator(
+                          "category",
+                        )}
+                      </span>
+                    </button>
+                  </th>
 
                   <th className="px-5 py-3 text-center">
-  <button
-    type="button"
-    onClick={() =>
-      handleSort("quantity")
-    }
-    className="inline-flex items-center gap-1 hover:text-slate-900"
-  >
-    {t.inventory.quantity}
-    <span aria-hidden="true">
-      {sortIndicator("quantity")}
-    </span>
-  </button>
-</th>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleSort(
+                          "quantity",
+                        )
+                      }
+                      className="inline-flex items-center gap-1 hover:text-slate-900"
+                    >
+                      {t.inventory.quantity}
+
+                      <span aria-hidden="true">
+                        {sortIndicator(
+                          "quantity",
+                        )}
+                      </span>
+                    </button>
+                  </th>
 
                   <th className="px-5 py-3">
-  <button
-    type="button"
-    onClick={() =>
-      handleSort("status")
-    }
-    className="inline-flex items-center gap-1 hover:text-slate-900"
-  >
-    {t.inventory.status}
-    <span aria-hidden="true">
-      {sortIndicator("status")}
-    </span>
-  </button>
-</th>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleSort(
+                          "status",
+                        )
+                      }
+                      className="inline-flex items-center gap-1 hover:text-slate-900"
+                    >
+                      {t.inventory.status}
+
+                      <span aria-hidden="true">
+                        {sortIndicator(
+                          "status",
+                        )}
+                      </span>
+                    </button>
+                  </th>
 
                   <th className="px-5 py-3 text-right">
                     {t.inventory.actions}
@@ -562,52 +652,175 @@ function handleMobileSortChange(
               </thead>
 
               <tbody className="divide-y divide-slate-100">
-                {filteredItems.map((item) => (
-                  <tr
-                    key={item.id}
-                    className="hover:bg-slate-50"
-                  >
-                    {/* Item */}
-                    <td className="px-5 py-4">
-                      <div className="font-medium text-slate-900">
-                        {item.name}
-                      </div>
+                {filteredItems.map(
+                  (item) => (
+                    <tr
+                      key={item.id}
+                      className="hover:bg-slate-50"
+                    >
+                      {/* Item */}
+                      <td className="px-5 py-4">
+                        <div className="font-medium text-slate-900">
+                          {item.name}
+                        </div>
 
-                      <div className="mt-1 text-xs text-slate-400">
-                        {t.inventory.minimum}: {" "}
-                        {item.minimumQuantity}{" "}
-                        {item.unit}
-                      </div>
-                    </td>
+                        <div className="mt-1 text-xs text-slate-400">
+                          {t.inventory.minimum}:{" "}
+                          {
+                            item.minimumQuantity
+                          }{" "}
+                          {item.unit}
+                        </div>
+                      </td>
 
-                    {/* Category */}
-                    <td className="px-5 py-4 text-slate-600">
-                      {item.category.name}
-                    </td>
+                      {/* Category */}
+                      <td className="px-5 py-4 text-slate-600">
+                        {
+                          item.category
+                            .name
+                        }
+                      </td>
 
-                    {/* Quantity */}
-                    <td className="px-5 py-4">
-                      {editingId === item.id ? (
-                        <div className="flex items-center justify-center gap-2">
-                          <input
-                            type="number"
-                            min="0"
-                            step="1"
-                            value={
-                              setQuantityValue
+                      {/* Quantity */}
+                      <td className="px-5 py-4">
+                        {editingId ===
+                        item.id ? (
+                          <div className="flex items-center justify-center gap-2">
+                            <input
+                              type="number"
+                              min="0"
+                              step="1"
+                              value={
+                                setQuantityValue
+                              }
+                              onChange={(
+                                event,
+                              ) =>
+                                setSetQuantityValue(
+                                  event
+                                    .target
+                                    .value,
+                                )
+                              }
+                              disabled={
+                                updatingId ===
+                                item.id
+                              }
+                              className="w-20 rounded-lg border border-slate-300 px-2 py-1.5 text-center outline-none focus:border-slate-500"
+                            />
+
+                            <button
+                              type="button"
+                              disabled={
+                                updatingId ===
+                                item.id
+                              }
+                              onClick={() =>
+                                handleSetQuantity(
+                                  item,
+                                )
+                              }
+                              className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+                            >
+                              {t.inventory.save}
+                            </button>
+
+                            <button
+                              type="button"
+                              disabled={
+                                updatingId ===
+                                item.id
+                              }
+                              onClick={() => {
+                                setEditingId(
+                                  null,
+                                );
+
+                                setSetQuantityValue(
+                                  "",
+                                );
+                              }}
+                              className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                            >
+                              {t.inventory.cancel}
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              type="button"
+                              disabled={
+                                updatingId ===
+                                  item.id ||
+                                item.quantity ===
+                                  0
+                              }
+                              onClick={() =>
+                                changeQuantity(
+                                  item.id,
+                                  "decrement",
+                                )
+                              }
+                              className="h-8 w-8 rounded-lg border border-slate-300 font-bold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                              −
+                            </button>
+
+                            <div className="w-16 text-center">
+                              <div className="font-semibold text-slate-900">
+                                {
+                                  item.quantity
+                                }
+                              </div>
+
+                              <div className="text-xs text-slate-400">
+                                {item.unit}
+                              </div>
+                            </div>
+
+                            <button
+                              type="button"
+                              disabled={
+                                updatingId ===
+                                item.id
+                              }
+                              onClick={() =>
+                                changeQuantity(
+                                  item.id,
+                                  "increment",
+                                )
+                              }
+                              className="h-8 w-8 rounded-lg border border-slate-300 font-bold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                              +
+                            </button>
+                          </div>
+                        )}
+                      </td>
+
+                      {/* Status */}
+                      <td className="px-5 py-4">
+                        {item.lowStock ? (
+                          <span className="inline-flex rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700">
+                            {
+                              t.inventory
+                                .lowStock
                             }
-                            onChange={(event) =>
-                              setSetQuantityValue(
-                                event.target.value,
-                              )
+                          </span>
+                        ) : (
+                          <span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">
+                            {
+                              t.inventory
+                                .inStock
                             }
-                            disabled={
-                              updatingId ===
-                              item.id
-                            }
-                            className="w-20 rounded-lg border border-slate-300 px-2 py-1.5 text-center outline-none focus:border-slate-500"
-                          />
+                          </span>
+                        )}
+                      </td>
 
+                      {/* Actions */}
+                      <td className="px-5 py-4 text-right">
+                        {editingId !==
+                          item.id && (
                           <button
                             type="button"
                             disabled={
@@ -615,117 +828,22 @@ function handleMobileSortChange(
                               item.id
                             }
                             onClick={() =>
-                              handleSetQuantity(
+                              startSetQuantity(
                                 item,
                               )
                             }
-                            className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+                            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
                           >
-                            {t.inventory.save}
+                            {
+                              t.inventory
+                                .setQuantity
+                            }
                           </button>
-
-                          <button
-                            type="button"
-                            disabled={
-                              updatingId ===
-                              item.id
-                            }
-                            onClick={() => {
-                              setEditingId(null);
-                              setSetQuantityValue(
-                                "",
-                              );
-                            }}
-                            className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
-                          >
-                            {t.inventory.cancel}
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-center gap-2">
-                          <button
-                            type="button"
-                            disabled={
-                              updatingId ===
-                                item.id ||
-                              item.quantity === 0
-                            }
-                            onClick={() =>
-                              changeQuantity(
-                                item.id,
-                                "decrement",
-                              )
-                            }
-                            className="h-8 w-8 rounded-lg border border-slate-300 font-bold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
-                          >
-                            −
-                          </button>
-
-                          <div className="w-16 text-center">
-                            <div className="font-semibold text-slate-900">
-                              {item.quantity}
-                            </div>
-
-                            <div className="text-xs text-slate-400">
-                              {item.unit}
-                            </div>
-                          </div>
-
-                          <button
-                            type="button"
-                            disabled={
-                              updatingId ===
-                              item.id
-                            }
-                            onClick={() =>
-                              changeQuantity(
-                                item.id,
-                                "increment",
-                              )
-                            }
-                            className="h-8 w-8 rounded-lg border border-slate-300 font-bold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
-                          >
-                            +
-                          </button>
-                        </div>
-                      )}
-                    </td>
-
-                    {/* Status */}
-                    <td className="px-5 py-4">
-                      {item.lowStock ? (
-                        <span className="inline-flex rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700">
-                          {t.inventory.lowStock}
-                        </span>
-                      ) : (
-                        <span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">
-                          {t.inventory.inStock}
-                        </span>
-                      )}
-                    </td>
-
-                    {/* Actions */}
-                    <td className="px-5 py-4 text-right">
-                      {editingId !== item.id && (
-                        <button
-                          type="button"
-                          disabled={
-                            updatingId ===
-                            item.id
-                          }
-                          onClick={() =>
-                            startSetQuantity(
-                              item,
-                            )
-                          }
-                          className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
-                        >
-                          {t.inventory.setQuantity}
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                        )}
+                      </td>
+                    </tr>
+                  ),
+                )}
 
                 {filteredItems.length ===
                   0 && (
@@ -734,7 +852,10 @@ function handleMobileSortChange(
                       colSpan={5}
                       className="px-5 py-12 text-center text-sm text-slate-500"
                     >
-                      {t.inventory.noMaterials}
+                      {
+                        t.inventory
+                          .noMaterials
+                      }
                     </td>
                   </tr>
                 )}
@@ -748,169 +869,199 @@ function handleMobileSortChange(
         {/* ========================= */}
 
         <div className="space-y-3 md:hidden">
-          {filteredItems.map((item) => (
-            <div
-              key={item.id}
-              className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
-            >
-              {/* Material information */}
-              <div className="mb-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <h2 className="break-words font-semibold text-slate-900">
-                      {item.name}
-                    </h2>
+          {filteredItems.map(
+            (item) => (
+              <div
+                key={item.id}
+                className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+              >
+                {/* Material information */}
+                <div className="mb-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <h2 className="break-words font-semibold text-slate-900">
+                        {item.name}
+                      </h2>
 
-                    <p className="mt-1 text-sm text-slate-500">
-                      {item.category.name}
-                    </p>
+                      <p className="mt-1 text-sm text-slate-500">
+                        {
+                          item.category
+                            .name
+                        }
+                      </p>
+                    </div>
+
+                    {item.lowStock ? (
+                      <span className="shrink-0 rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700">
+                        {
+                          t.inventory
+                            .lowStock
+                        }
+                      </span>
+                    ) : (
+                      <span className="shrink-0 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">
+                        {
+                          t.inventory
+                            .inStock
+                        }
+                      </span>
+                    )}
                   </div>
 
-                  {item.lowStock ? (
-                    <span className="shrink-0 rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700">
-                      {t.inventory.lowStock}
-                    </span>
-                  ) : (
-                    <span className="shrink-0 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">
-                      {t.inventory.inStock}
-                    </span>
-                  )}
+                  <p className="mt-2 text-xs text-slate-400">
+                    {t.inventory.minimum}:{" "}
+                    {
+                      item.minimumQuantity
+                    }{" "}
+                    {item.unit}
+                  </p>
                 </div>
 
-                <p className="mt-2 text-xs text-slate-400">
-                  {t.inventory.minimum}: {" "}
-                  {item.minimumQuantity}{" "}
-                  {item.unit}
-                </p>
-              </div>
-
-              {/* Mobile quantity controls */}
-              {editingId === item.id ? (
-                <div className="space-y-3">
-                  <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={
-                      setQuantityValue
-                    }
-                    onChange={(event) =>
-                      setSetQuantityValue(
-                        event.target.value,
-                      )
-                    }
-                    disabled={
-                      updatingId ===
-                      item.id
-                    }
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-center outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
-                  />
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      disabled={
-                        updatingId ===
-                        item.id
+                {/* Mobile quantity controls */}
+                {editingId ===
+                item.id ? (
+                  <div className="space-y-3">
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={
+                        setQuantityValue
                       }
-                      onClick={() =>
-                        handleSetQuantity(
-                          item,
-                        )
-                      }
-                      className="rounded-lg bg-slate-900 px-3 py-2.5 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
-                    >
-                      {t.inventory.save}
-                    </button>
-
-                    <button
-                      type="button"
-                      disabled={
-                        updatingId ===
-                        item.id
-                      }
-                      onClick={() => {
-                        setEditingId(null);
+                      onChange={(event) =>
                         setSetQuantityValue(
-                          "",
-                        );
-                      }}
-                      className="rounded-lg border border-slate-300 px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                    >
-                      {t.inventory.cancel}
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div className="flex items-center justify-center gap-5">
-                    <button
-                      type="button"
-                      disabled={
-                        updatingId ===
-                          item.id ||
-                        item.quantity === 0
-                      }
-                      onClick={() =>
-                        changeQuantity(
-                          item.id,
-                          "decrement",
+                          event.target
+                            .value,
                         )
                       }
-                      className="h-11 w-11 rounded-lg border border-slate-300 text-xl font-bold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      −
-                    </button>
+                      disabled={
+                        updatingId ===
+                        item.id
+                      }
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-center outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+                    />
 
-                    <div className="min-w-20 text-center">
-                      <div className="text-xl font-bold text-slate-900">
-                        {item.quantity}
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        disabled={
+                          updatingId ===
+                          item.id
+                        }
+                        onClick={() =>
+                          handleSetQuantity(
+                            item,
+                          )
+                        }
+                        className="rounded-lg bg-slate-900 px-3 py-2.5 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+                      >
+                        {t.inventory.save}
+                      </button>
+
+                      <button
+                        type="button"
+                        disabled={
+                          updatingId ===
+                          item.id
+                        }
+                        onClick={() => {
+                          setEditingId(
+                            null,
+                          );
+
+                          setSetQuantityValue(
+                            "",
+                          );
+                        }}
+                        className="rounded-lg border border-slate-300 px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                      >
+                        {
+                          t.inventory
+                            .cancel
+                        }
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-center gap-5">
+                      <button
+                        type="button"
+                        disabled={
+                          updatingId ===
+                            item.id ||
+                          item.quantity ===
+                            0
+                        }
+                        onClick={() =>
+                          changeQuantity(
+                            item.id,
+                            "decrement",
+                          )
+                        }
+                        className="h-11 w-11 rounded-lg border border-slate-300 text-xl font-bold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        −
+                      </button>
+
+                      <div className="min-w-20 text-center">
+                        <div className="text-xl font-bold text-slate-900">
+                          {item.quantity}
+                        </div>
+
+                        <div className="text-xs text-slate-400">
+                          {item.unit}
+                        </div>
                       </div>
 
-                      <div className="text-xs text-slate-400">
-                        {item.unit}
-                      </div>
+                      <button
+                        type="button"
+                        disabled={
+                          updatingId ===
+                          item.id
+                        }
+                        onClick={() =>
+                          changeQuantity(
+                            item.id,
+                            "increment",
+                          )
+                        }
+                        className="h-11 w-11 rounded-lg border border-slate-300 text-xl font-bold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        +
+                      </button>
                     </div>
 
                     <button
                       type="button"
                       disabled={
-                        updatingId ===
-                        item.id
+                        updatingId === item.id
                       }
                       onClick={() =>
-                        changeQuantity(
-                          item.id,
-                          "increment",
+                        startSetQuantity(
+                          item,
                         )
                       }
-                      className="h-11 w-11 rounded-lg border border-slate-300 text-xl font-bold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                      className="mt-3 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
                     >
-                      +
+                      {
+                        t.inventory
+                          .setQuantity
+                      }
                     </button>
-                  </div>
-
-                  <button
-                    type="button"
-                    disabled={
-                      updatingId === item.id
-                    }
-                    onClick={() =>
-                      startSetQuantity(item)
-                    }
-                    className="mt-3 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
-                  >
-                    {t.inventory.setQuantity}
-                  </button>
-                </>
-              )}
-            </div>
-          ))}
+                  </>
+                )}
+              </div>
+            ),
+          )}
 
           {filteredItems.length ===
             0 && (
             <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
-              {t.inventory.noMaterials}
+              {
+                t.inventory
+                  .noMaterials
+              }
             </div>
           )}
         </div>
