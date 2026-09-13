@@ -340,6 +340,20 @@ export default function InventoryPage() {
   setSortOrder("asc");
 }
 
+function handleMobileSortChange(
+  event: React.ChangeEvent<HTMLSelectElement>,
+) {
+  const column =
+    event.target.value as InventorySortBy;
+
+  if (column === sortBy) {
+    return;
+  }
+
+  setSortBy(column);
+  setSortOrder("asc");
+}
+
   function sortIndicator(
   column: InventorySortBy,
 ) {
@@ -351,6 +365,7 @@ export default function InventoryPage() {
     ? "↑"
     : "↓";
 }
+
   // Filter materials by name.
   const filteredItems =
     items.filter((item) =>
@@ -427,7 +442,45 @@ export default function InventoryPage() {
             className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
           />
         </div>
+{/* Mobile sorting */}
+<div className="mb-4 flex gap-2 md:hidden">
+  <select
+    value={sortBy}
+    onChange={handleMobileSortChange}
+    className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+  >
+    <option value="name">
+      {t.inventory.item}
+    </option>
 
+    <option value="category">
+      {t.inventory.category}
+    </option>
+
+    <option value="quantity">
+      {t.inventory.quantity}
+    </option>
+
+    <option value="status">
+      {t.inventory.status}
+    </option>
+  </select>
+
+  <button
+    type="button"
+    onClick={() =>
+      setSortOrder((currentOrder) =>
+        currentOrder === "asc"
+          ? "desc"
+          : "asc",
+      )
+    }
+    className="min-w-12 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+    aria-label="Toggle sort order"
+  >
+    {sortOrder === "asc" ? "↑" : "↓"}
+  </button>
+</div>
         {/* Error */}
         {error && (
           <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
