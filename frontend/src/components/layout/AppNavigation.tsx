@@ -31,14 +31,21 @@ export default function AppNavigation({
 
   return (
     <nav className="space-y-1">
-      <Link
-        href="/inventory"
-        className={linkClass("/inventory")}
-      >
-        {t.navigation.inventory}
-      </Link>
+  <Link
+    href="/dashboard"
+    className={linkClass("/dashboard")}
+  >
+    {t.navigation.dashboard}
+  </Link>
 
-      {isAdmin && (
+  <Link
+    href="/inventory"
+    className={linkClass("/inventory")}
+  >
+    {t.navigation.inventory}
+  </Link>
+
+  {isAdmin && (
         <>
           <div className="my-3 border-t border-slate-200" />
 

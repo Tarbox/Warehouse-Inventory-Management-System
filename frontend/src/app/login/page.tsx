@@ -40,7 +40,7 @@ export default function LoginPage() {
     try {
       await login(username, password);
 
-      router.replace("/inventory");
+      router.replace("/dashboard");
       router.refresh();
     } catch (error) {
       if (error instanceof ApiError) {
