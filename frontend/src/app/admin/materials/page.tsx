@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useCallback,
   useEffect,
   useState,
 } from "react";
@@ -11,6 +12,10 @@ import {
   getInventory,
   type InventoryItem,
 } from "../../../lib/api";
+
+import {
+  useInventoryRealtime,
+} from "../../../hooks/useInventoryRealtime";
 
 import { useRouter } from "next/navigation";
 
@@ -37,7 +42,7 @@ export default function AdminMaterialsPage() {
   const [deletingId, setDeletingId] =
     useState<number | null>(null);
 
-  async function loadMaterials() {
+  const loadMaterials = useCallback(async () => {
     try {
       setError(null);
 
@@ -68,12 +73,29 @@ export default function AdminMaterialsPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [router]);
 
   useEffect(() => {
-    loadMaterials();
-  }, []);
+  void loadMaterials();
+}, [loadMaterials]);
 
+const handleMaterialCreated = useCallback(() => {
+  void loadMaterials();
+}, [loadMaterials]);
+
+const handleMaterialDeleted = useCallback(() => {
+  void loadMaterials();
+}, [loadMaterials]);
+
+const handleMaterialUpdated = useCallback(() => {
+  void loadMaterials();
+}, [loadMaterials]);
+
+useInventoryRealtime({
+  onMaterialCreated: handleMaterialCreated,
+  onMaterialUpdated: handleMaterialUpdated,
+  onMaterialDeleted: handleMaterialDeleted,
+});
   function openCreateForm() {
     setEditingMaterial(null);
     setFormOpen(true);

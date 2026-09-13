@@ -22,19 +22,100 @@ type ConnectionReadyEvent = {
 // The `RealtimeEvent` type represents the different types of events that can be received from the WebSocket connection. It can either be an `InventoryUpdatedEvent` or a `ConnectionReadyEvent`.
 type RealtimeEvent =
   | InventoryUpdatedEvent
+  | MaterialCreatedEvent
+  | MaterialDeletedEvent
+  | MaterialUpdatedEvent
+  | CategoryCreatedEvent
+  | CategoryDeletedEvent
+  | CategoryUpdatedEvent
   | ConnectionReadyEvent;
 
-// The `useInventoryRealtime` hook establishes a WebSocket connection to the backend for receiving real-time inventory updates. It handles automatic reconnection with exponential backoff in case of disconnections.
+type MaterialCreatedEvent = {
+  type: "material.created";
+
+  payload: {
+    materialId: number;
+  };
+};
+
+type MaterialDeletedEvent = {
+  type: "material.deleted";
+
+  payload: {
+    materialId: number;
+  };
+};
+
+type CategoryCreatedEvent = {
+  type: "category.created";
+
+  payload: {
+    categoryId: number;
+  };
+};
+
+type CategoryDeletedEvent = {
+  type: "category.deleted";
+
+  payload: {
+    categoryId: number;
+  };
+};
+
+type MaterialUpdatedEvent = {
+  type: "material.updated";
+  payload: {
+    materialId: number;
+  };
+};
+
+type CategoryUpdatedEvent = {
+  type: "category.updated";
+  payload: {
+    categoryId: number;
+  };
+};
+
+
 type UseInventoryRealtimeOptions = {
-  onInventoryUpdated: (
-    payload: InventoryUpdatedEvent["payload"],
+  onInventoryUpdated?: (
+  payload: InventoryUpdatedEvent["payload"],
+) => void;
+
+  onMaterialCreated?: (
+    payload: MaterialCreatedEvent["payload"],
   ) => void;
+
+  onMaterialDeleted?: (
+    payload: MaterialDeletedEvent["payload"],
+  ) => void;
+
+  onCategoryCreated?: (
+    payload: CategoryCreatedEvent["payload"],
+  ) => void;
+
+  onCategoryDeleted?: (
+    payload: CategoryDeletedEvent["payload"],
+  ) => void;
+  onMaterialUpdated?: (
+  payload: MaterialUpdatedEvent["payload"],
+) => void;
+
+onCategoryUpdated?: (
+  payload: CategoryUpdatedEvent["payload"],
+) => void;
 };
 
 // The `useInventoryRealtime` hook establishes a WebSocket connection to the backend for receiving real-time inventory updates. It handles automatic reconnection with exponential backoff in case of disconnections.
 // It takes an `onInventoryUpdated` callback function as an option, which is called whenever an inventory update event is received from the server.
 export function useInventoryRealtime({
   onInventoryUpdated,
+  onMaterialCreated,
+  onMaterialDeleted,
+  onMaterialUpdated,
+  onCategoryCreated,
+  onCategoryDeleted,
+  onCategoryUpdated,
 }: UseInventoryRealtimeOptions) {
   const socketRef =
     useRef<WebSocket | null>(null);
@@ -94,13 +175,54 @@ export function useInventoryRealtime({
               ) as RealtimeEvent;
 
             if (
-              message.type ===
-              "inventory.updated"
-            ) {
-              onInventoryUpdated(
-                message.payload,
-              );
-            }
+  message.type ===
+  "inventory.updated"
+) {
+  onInventoryUpdated?.(message.payload);
+}
+
+if (
+  message.type ===
+  "material.created"
+) {
+  onMaterialCreated?.(
+    message.payload,
+  );
+}
+
+if (
+  message.type ===
+  "material.deleted"
+) {
+  onMaterialDeleted?.(
+    message.payload,
+  );
+}
+
+if (
+  message.type ===
+  "category.created"
+) {
+  onCategoryCreated?.(
+    message.payload,
+  );
+}
+
+if (
+  message.type ===
+  "category.deleted"
+) {
+  onCategoryDeleted?.(
+    message.payload,
+  );
+}
+if (message.type === "material.updated") {
+  onMaterialUpdated?.(message.payload);
+}
+
+if (message.type === "category.updated") {
+  onCategoryUpdated?.(message.payload);
+}
           } catch (error) {
             console.error(
               "Invalid realtime message",
@@ -166,5 +288,13 @@ export function useInventoryRealtime({
 
       socketRef.current?.close();
     };
-  }, [onInventoryUpdated]);
+  }, [
+  onInventoryUpdated,
+  onMaterialCreated,
+  onMaterialDeleted,
+  onMaterialUpdated,
+  onCategoryCreated,
+  onCategoryDeleted,
+  onCategoryUpdated,
+]);
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useCallback,
   useEffect,
   useState,
 } from "react";
@@ -16,6 +17,9 @@ import {
 
 import { useRouter } from "next/navigation";
 import { useLocale } from "../../../lib/i18n/LocaleProvider";
+import {
+  useInventoryRealtime,
+} from "../../../hooks/useInventoryRealtime";
 
 export default function AdminCategoriesPage() {
   const router = useRouter();
@@ -48,7 +52,7 @@ export default function AdminCategoriesPage() {
   const [deletingId, setDeletingId] =
     useState<number | null>(null);
 
-  async function loadCategories() {
+  const loadCategories = useCallback(async () => {
     try {
       setError(null);
 
@@ -79,11 +83,29 @@ export default function AdminCategoriesPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [router]);
 
   useEffect(() => {
-    loadCategories();
-  }, []);
+  void loadCategories();
+}, [loadCategories]);
+
+const handleCategoryCreated = useCallback(() => {
+  void loadCategories();
+}, [loadCategories]);
+
+const handleCategoryDeleted = useCallback(() => {
+  void loadCategories();
+}, [loadCategories]);
+
+const handleCategoryUpdated = useCallback(() => {
+  void loadCategories();
+}, [loadCategories]);
+
+useInventoryRealtime({
+  onCategoryCreated: handleCategoryCreated,
+  onCategoryUpdated: handleCategoryUpdated,
+  onCategoryDeleted: handleCategoryDeleted,
+});
 
   function openCreateForm() {
     setEditingCategory(null);

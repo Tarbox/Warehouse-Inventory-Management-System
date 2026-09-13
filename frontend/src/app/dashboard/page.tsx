@@ -1,8 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "../../components/layout/AppShell";
+
+
+import {
+  useInventoryRealtime,
+} from "../../hooks/useInventoryRealtime";
 
 import {
   ApiError,
@@ -74,6 +79,98 @@ export default function DashboardPage() {
     loadDashboard();
   }, [router]);
 
+  const handleInventoryUpdated =
+  useCallback(
+    ({
+      materialId,
+      quantity,
+      version,
+    }: {
+      materialId: number;
+      quantity: number;
+      version: number;
+    }) => {
+      setItems((currentItems) =>
+        currentItems.map((item) => {
+          if (item.id !== materialId) {
+            return item;
+          }
+
+          if (version <= item.version) {
+            return item;
+          }
+
+          return {
+            ...item,
+            quantity,
+            version,
+            lowStock:
+              quantity <= item.minimumQuantity,
+          };
+        }),
+      );
+    },
+    [],
+  );
+  const refreshInventory = useCallback(async () => {
+  try {
+    const response = await getInventory();
+    setItems(response.items);
+  } catch (error) {
+    console.error(
+      "Failed to refresh inventory after realtime event",
+      error,
+    );
+  }
+}, []);
+
+  const refreshCategories = useCallback(async () => {
+  try {
+    const response = await getCategories();
+    setCategories(response.items);
+  } catch (error) {
+    console.error(
+      "Failed to refresh categories after realtime event",
+      error,
+    );
+  }
+}, []);
+
+  const handleMaterialCreated = useCallback(() => {
+    void refreshInventory();
+  }, [refreshInventory]);
+
+  const handleMaterialDeleted = useCallback(() => {
+    void refreshInventory();
+  }, [refreshInventory]);
+
+  const handleCategoryCreated = useCallback(() => {
+    void refreshCategories();
+  }, [refreshCategories]);
+
+  const handleCategoryDeleted = useCallback(() => {
+    void refreshCategories();
+  }, [refreshCategories]);
+
+  const handleMaterialUpdated = useCallback(() => {
+  void refreshInventory();
+}, [refreshInventory]);
+
+const handleCategoryUpdated = useCallback(() => {
+  void refreshCategories();
+  void refreshInventory();
+}, [refreshCategories, refreshInventory]);
+
+  useInventoryRealtime({
+  onInventoryUpdated: handleInventoryUpdated,
+  onMaterialCreated: handleMaterialCreated,
+  onMaterialUpdated: handleMaterialUpdated,
+  onMaterialDeleted: handleMaterialDeleted,
+  onCategoryCreated: handleCategoryCreated,
+  onCategoryDeleted: handleCategoryDeleted,
+  onCategoryUpdated: handleCategoryUpdated,
+});
+
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-slate-100">
@@ -94,6 +191,8 @@ export default function DashboardPage() {
     );
   }
 
+  
+
   const totalQuantity = items.reduce(
     (total, item) =>
       total + item.quantity,
@@ -103,6 +202,13 @@ export default function DashboardPage() {
   const lowStockCount = items.filter(
     (item) => item.lowStock,
   ).length;
+
+  const categoryCards = categories.map((category) => ({
+  ...category,
+  materialCount: items.filter(
+    (item) => item.category.id === category.id,
+  ).length,
+}));
 
   return (
   <AppShell
@@ -155,6 +261,38 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
+    <section className="mt-8">
+  <div className="flex items-center justify-between">
+    <h2 className="text-lg font-semibold text-slate-900">
+      Categories
+    </h2>
+  </div>
+
+  <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    {categoryCards.map((category) => (
+      <div
+        key={category.id}
+        className="overflow-hidden rounded-xl border bg-white"
+      >
+        <div className="flex h-32 items-center justify-center bg-slate-200">
+          <span className="text-sm text-slate-500">
+            Category image
+          </span>
+        </div>
+
+        <div className="p-4">
+          <h3 className="font-semibold text-slate-900">
+            {category.name}
+          </h3>
+
+          <p className="mt-1 text-sm text-slate-500">
+            {category.materialCount} materials
+          </p>
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
   </AppShell>
 );
 }

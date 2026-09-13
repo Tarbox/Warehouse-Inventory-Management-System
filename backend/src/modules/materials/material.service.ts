@@ -1,7 +1,9 @@
 import { prisma } from "../../lib/prisma.js";
 import type { ListMaterialsQuery } from "./material.schema.js";
 import { toMaterialDto } from "./material.dto.js";
-
+import {
+  broadcast,
+  } from "../realtime/realtime.manager.js"
 export async function listMaterials(query: ListMaterialsQuery) {
   // Extract filtering and pagination parameters from the request query.
   const {
@@ -127,8 +129,8 @@ type CreateMaterialInput = {
 // The function creates a new material in the database along with its initial inventory record.
 export async function createMaterial(
   input: CreateMaterialInput,
-) {// Use a database transaction to ensure that both the material and its inventory record are created atomically.
-  return prisma.$transaction(
+) {
+  const result = await prisma.$transaction(
     async (tx) => {
       const category =
         await tx.category.findUnique({
@@ -142,13 +144,12 @@ export async function createMaterial(
           "CATEGORY_NOT_FOUND",
         );
       }
-      // Check if a material with the same name already exists in the specified category to prevent duplicates.
+
       const existing =
         await tx.material.findFirst({
           where: {
             categoryId:
               input.categoryId,
-
             name: input.name,
           },
         });
@@ -158,26 +159,21 @@ export async function createMaterial(
           "MATERIAL_ALREADY_EXISTS",
         );
       }
-      // Create the new material record in the database with the provided input data.
+
       const material =
         await tx.material.create({
           data: {
             name: input.name,
-            // If the description is not provided, set it to null in the database.
             description:
-              input.description ??
-              null,
-            // Set the unit, minimum quantity, and category ID for the new material.
+              input.description ?? null,
             unit: input.unit,
-
             minimumQuantity:
               input.minimumQuantity,
-
             categoryId:
               input.categoryId,
           },
         });
-      // Create the initial inventory record for the new material with the specified initial quantity and set the version to 1.
+
       await tx.inventory.create({
         data: {
           materialId: material.id,
@@ -186,10 +182,19 @@ export async function createMaterial(
           version: 1,
         },
       });
-      // Return the newly created material record to the caller.
+
       return material;
     },
   );
+
+  broadcast({
+    type: "material.created",
+    payload: {
+      materialId: result.id,
+    },
+  });
+
+  return result;
 }
 
 // The function updates an existing material in the database with the provided input data. It checks for the existence of the material and category before performing the update.
@@ -273,60 +278,79 @@ export async function updateMaterial(
     }
   }
 
-  return prisma.material.update({
-    where: {
-      id,
-    },
+  const result = await prisma.material.update({
+  where: {
+    id,
+  },
 
-    data: {
-      ...(input.name !== undefined && {
-        name: input.name,
-      }),
+  data: {
+    ...(input.name !== undefined && {
+      name: input.name,
+    }),
 
-      ...(input.description !== undefined && {
-        description: input.description,
-      }),
+    ...(input.description !== undefined && {
+      description: input.description,
+    }),
 
-      ...(input.unit !== undefined && {
-        unit: input.unit,
-      }),
+    ...(input.unit !== undefined && {
+      unit: input.unit,
+    }),
 
-      ...(input.minimumQuantity !== undefined && {
-        minimumQuantity:
-          input.minimumQuantity,
-      }),
+    ...(input.minimumQuantity !== undefined && {
+      minimumQuantity:
+        input.minimumQuantity,
+    }),
 
-      ...(input.categoryId !== undefined && {
-        categoryId: input.categoryId,
-      }),
-    },
-  });
+    ...(input.categoryId !== undefined && {
+      categoryId: input.categoryId,
+    }),
+  },
+});
+
+broadcast({
+  type: "material.updated",
+  payload: {
+    materialId: result.id,
+  },
+});
+
+return result;
 }
 
 // The function deletes a material from the database by marking it as inactive. It checks for the existence of the material before performing the deletion.
 export async function deleteMaterial(
   id: number,
-) {// Check if the material with the specified ID exists in the database.
+) {
   const material =
     await prisma.material.findUnique({
       where: {
         id,
       },
     });
-  // If the material does not exist, throw an error indicating that it was not found.
+
   if (!material) {
     throw new Error(
       "MATERIAL_NOT_FOUND",
     );
   }
-  // Mark the material as inactive in the database instead of physically deleting it. This allows for soft deletion and preserves historical data.
-  return prisma.material.update({
-    where: {
-      id,
-    },
 
-    data: {
-      isActive: false,
+  const result =
+    await prisma.material.update({
+      where: {
+        id,
+      },
+
+      data: {
+        isActive: false,
+      },
+    });
+
+  broadcast({
+    type: "material.deleted",
+    payload: {
+      materialId: id,
     },
   });
+
+  return result;
 }

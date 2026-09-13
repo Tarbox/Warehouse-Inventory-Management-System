@@ -1,4 +1,7 @@
 import { prisma } from "../../lib/prisma.js";
+import {
+  broadcast,
+} from "../realtime/realtime.manager.js"
 
 type CreateCategoryInput = {
   name: string;
@@ -40,19 +43,29 @@ export async function createCategory(
     );
   }
 
-  return prisma.category.create({
-    data: {
-      name: input.name,
-      description:
-        input.description ?? null,
-    },
+  const result =
+    await prisma.category.create({
+      data: {
+        name: input.name,
+        description:
+          input.description ?? null,
+      },
 
-    select: {
-      id: true,
-      name: true,
-      description: true,
+      select: {
+        id: true,
+        name: true,
+        description: true,
+      },
+    });
+
+  broadcast({
+    type: "category.created",
+    payload: {
+      categoryId: result.id,
     },
   });
+
+  return result;
 }
 
 export async function updateCategory(
@@ -90,21 +103,30 @@ export async function updateCategory(
     }
   }
 
-  return prisma.category.update({
-    where: {
-      id,
-    },
+  const result = await prisma.category.update({
+  where: {
+    id,
+  },
 
-    data: {
-      ...input,
-    },
+  data: {
+    ...input,
+  },
 
-    select: {
-      id: true,
-      name: true,
-      description: true,
-    },
-  });
+  select: {
+    id: true,
+    name: true,
+    description: true,
+  },
+});
+
+broadcast({
+  type: "category.updated",
+  payload: {
+    categoryId: result.id,
+  },
+});
+
+return result;
 }
 
 export async function deleteCategory(
@@ -139,6 +161,13 @@ export async function deleteCategory(
   await prisma.category.delete({
     where: {
       id,
+    },
+  });
+
+  broadcast({
+    type: "category.deleted",
+    payload: {
+      categoryId: id,
     },
   });
 }
