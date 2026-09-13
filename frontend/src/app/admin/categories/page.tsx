@@ -15,9 +15,11 @@ import {
 } from "../../../lib/api";
 
 import { useRouter } from "next/navigation";
+import { useLocale } from "../../../lib/i18n/LocaleProvider";
 
 export default function AdminCategoriesPage() {
   const router = useRouter();
+  const { t } = useLocale();
 
   const [categories, setCategories] =
     useState<Category[]>([]);
@@ -121,7 +123,7 @@ export default function AdminCategoriesPage() {
 
     if (!trimmedName) {
       setError(
-        "Category name is required",
+        t.categories.nameRequired,
       );
       return;
     }
@@ -158,8 +160,8 @@ export default function AdminCategoriesPage() {
       } else {
         setError(
           editingCategory
-            ? "Failed to update category"
-            : "Failed to create category",
+            ? t.categories.updateError
+            : t.categories.createError,
         );
       }
     } finally {
@@ -172,8 +174,8 @@ export default function AdminCategoriesPage() {
   ) {
     const confirmed =
       window.confirm(
-        `Delete category "${category.name}"?`,
-      );
+  `${t.categories.deleteConfirm} "${category.name}"?`,
+);
 
     if (!confirmed) {
       return;
@@ -195,7 +197,7 @@ export default function AdminCategoriesPage() {
         setError(error.message);
       } else {
         setError(
-          "Failed to delete category",
+          t.categories.deleteError
         );
       }
     } finally {
@@ -206,7 +208,7 @@ export default function AdminCategoriesPage() {
   if (loading) {
     return (
       <p className="text-slate-500">
-        Loading categories...
+        {t.categories.loading}
       </p>
     );
   }
@@ -218,11 +220,11 @@ export default function AdminCategoriesPage() {
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-2xl font-bold">
-                Categories
+                {t.categories.title}
               </h1>
 
               <p className="text-sm text-slate-500">
-                Manage material categories.
+                {t.categories.description}
               </p>
             </div>
 
@@ -231,7 +233,7 @@ export default function AdminCategoriesPage() {
               onClick={openCreateForm}
               className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
             >
-              Add category
+              {t.categories.add}
             </button>
           </div>
 
@@ -248,15 +250,15 @@ export default function AdminCategoriesPage() {
       <thead className="border-b bg-slate-50">
         <tr>
           <th className="px-4 py-3 text-left text-sm font-medium">
-            Name
+            {t.categories.name}
           </th>
 
           <th className="px-4 py-3 text-left text-sm font-medium">
-            Description
+            {t.categories.descriptionField}
           </th>
 
           <th className="px-4 py-3 text-right text-sm font-medium">
-            Actions
+            {t.categories.actions}
           </th>
         </tr>
       </thead>
@@ -284,7 +286,7 @@ export default function AdminCategoriesPage() {
                   }
                   className="rounded-lg border px-3 py-1.5 text-sm hover:bg-slate-50"
                 >
-                  Edit
+                  {t.categories.editAction}
                 </button>
 
                 <button
@@ -298,8 +300,8 @@ export default function AdminCategoriesPage() {
                   className="rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-700 hover:bg-red-50 disabled:opacity-50"
                 >
                   {deletingId === category.id
-                    ? "Deleting..."
-                    : "Delete"}
+                    ? t.categories.deleting
+                    : t.categories.deleteAction}
                 </button>
               </div>
             </td>
@@ -312,7 +314,7 @@ export default function AdminCategoriesPage() {
               colSpan={3}
               className="px-4 py-10 text-center text-slate-500"
             >
-              No categories found.
+              {t.categories.empty}
             </td>
           </tr>
         )}
@@ -345,7 +347,7 @@ export default function AdminCategoriesPage() {
             }
             className="flex-1 rounded-lg border px-3 py-2 text-sm font-medium hover:bg-slate-50"
           >
-            Edit
+            {t.categories.editAction}
           </button>
 
           <button
@@ -359,8 +361,8 @@ export default function AdminCategoriesPage() {
             className="flex-1 rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
           >
             {deletingId === category.id
-              ? "Deleting..."
-              : "Delete"}
+              ? t.categories.deleting
+              : t.categories.deleteAction}
           </button>
         </div>
       </div>
@@ -368,7 +370,7 @@ export default function AdminCategoriesPage() {
 
     {categories.length === 0 && (
       <div className="px-4 py-10 text-center text-sm text-slate-500">
-        No categories found.
+        {t.categories.empty}
       </div>
     )}
   </div>
@@ -379,14 +381,14 @@ export default function AdminCategoriesPage() {
           <div className="mb-6">
             <h1 className="text-2xl font-bold">
               {editingCategory
-                ? "Edit category"
-                : "Add category"}
+                ? t.categories.edit
+                : t.categories.add}
             </h1>
 
             <p className="text-sm text-slate-500">
               {editingCategory
-                ? "Update the category information."
-                : "Create a new material category."}
+                ? t.categories.updateName
+                : t.categories.addName}
             </p>
           </div>
 
@@ -405,7 +407,7 @@ export default function AdminCategoriesPage() {
                 htmlFor="category-name"
                 className="mb-1 block text-sm font-medium"
               >
-                Name
+                {t.categories.name}
               </label>
 
               <input
@@ -420,7 +422,7 @@ export default function AdminCategoriesPage() {
                 maxLength={100}
                 required
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-slate-500"
-                placeholder="e.g. Packaging"
+                placeholder={t.categories.exmpl}
               />
             </div>
 
@@ -429,7 +431,7 @@ export default function AdminCategoriesPage() {
                 htmlFor="category-description"
                 className="mb-1 block text-sm font-medium"
               >
-                Description
+                {t.categories.descriptionField}
               </label>
 
               <textarea
@@ -443,7 +445,7 @@ export default function AdminCategoriesPage() {
                 maxLength={500}
                 rows={4}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-slate-500"
-                placeholder="Describe this category..."
+                placeholder={t.categories.descriptionPlaceholder}
               />
             </div>
 
@@ -454,7 +456,7 @@ export default function AdminCategoriesPage() {
                 disabled={saving}
                 className="rounded-lg border px-4 py-2 text-sm hover:bg-slate-50 disabled:opacity-50"
               >
-                Cancel
+                {t.categories.cancel}
               </button>
 
               <button
@@ -468,8 +470,8 @@ export default function AdminCategoriesPage() {
                 {saving
                   ? "Saving..."
                   : editingCategory
-                    ? "Save changes"
-                    : "Create category"}
+                    ? t.categories.save
+                    : t.categories.create}
               </button>
             </div>
           </form>

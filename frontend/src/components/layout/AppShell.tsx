@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import AppNavigation from "./AppNavigation";
 import MobileNavigation from "./MobileNavigation";
+import { useLocale } from "../../lib/i18n/LocaleProvider";
+import LanguageSwitcher from "../../lib/i18n/LanguageSwitcher";
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -15,31 +17,34 @@ export default function AppShell({
   isAdmin = false,
 }: AppShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { locale, setLocale } = useLocale();
 
   return (
     <div className="min-h-screen bg-slate-100">
       {/* Global application header */}
       <header className="border-b border-slate-800 bg-slate-900 text-white">
-  <div className="flex h-16 items-center justify-between px-4 sm:px-6">
-    <div className="flex items-center gap-3">
-      <button
-        type="button"
-        onClick={() => setMobileOpen(true)}
-        className="rounded-lg p-2 text-slate-300 hover:bg-slate-800 hover:text-white md:hidden"
-        aria-label="Open navigation"
-      >
-        <span className="text-xl">☰</span>
-      </button>
+        <div className="flex h-16 items-center justify-between px-4 sm:px-6">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setMobileOpen(true)}
+              className="rounded-lg p-2 text-slate-300 hover:bg-slate-800 hover:text-white md:hidden"
+              aria-label="Open navigation"
+            >
+              <span className="text-xl">☰</span>
+            </button>
 
-      <Link
-        href="/inventory"
-        className="text-lg font-semibold tracking-tight"
-      >
-        Warehouse Inventory
-      </Link>
-    </div>
-  </div>
-</header>
+            <Link
+              href="/inventory"
+              className="text-lg font-semibold tracking-tight"
+            >
+              Warehouse Inventory
+            </Link>
+          </div>
+
+          <LanguageSwitcher />
+        </div>
+      </header>
 
       <div className="flex min-h-[calc(100vh-4rem)]">
         {/* Application navigation */}

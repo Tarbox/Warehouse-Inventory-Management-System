@@ -10,10 +10,11 @@ import {
 } from "../../lib/api";
 
 import { useRouter } from "next/navigation";
+import { useLocale } from "../../lib/i18n/LocaleProvider";
 
 export default function AdminPage() {
   const router = useRouter();
-
+  const { t } = useLocale();
   useEffect(() => {
     async function checkAccess() {
       try {
@@ -41,11 +42,11 @@ export default function AdminPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold">
-        Administration
+        {t.admin.title}
       </h1>
 
       <p className="mt-2 text-slate-500">
-        Select an administrative section.
+        {t.admin.description}
       </p>
     </div>
   );

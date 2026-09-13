@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useLocale } from "../../lib/i18n/LocaleProvider";
 
 type AppNavigationProps = {
   isAdmin: boolean;
@@ -11,6 +12,7 @@ export default function AppNavigation({
   isAdmin,
 }: AppNavigationProps) {
   const pathname = usePathname();
+  const { t } = useLocale();
 
   function linkClass(href: string) {
   const isActive =
@@ -33,7 +35,7 @@ export default function AppNavigation({
         href="/inventory"
         className={linkClass("/inventory")}
       >
-        Inventory
+        {t.navigation.inventory}
       </Link>
 
       {isAdmin && (
@@ -41,49 +43,49 @@ export default function AppNavigation({
           <div className="my-3 border-t border-slate-200" />
 
           <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
-            Administration
+            {t.navigation.administration}
           </p>
 
           <Link
             href="/admin"
             className={linkClass("/admin")}
           >
-            Dashboard
+            {t.navigation.dashboard}
           </Link>
 
           <Link
             href="/admin/categories"
             className={linkClass("/admin/categories")}
           >
-            Categories
+            {t.navigation.categories}
           </Link>
 
           <Link
             href="/admin/materials"
             className={linkClass("/admin/materials")}
           >
-            Materials
+            {t.navigation.materials}
           </Link>
 
           <Link
             href="/admin/users"
             className={linkClass("/admin/users")}
           >
-            Users
+            {t.navigation.users}
           </Link>
 
           <Link
             href="/admin/history"
             className={linkClass("/admin/history")}
           >
-            History
+            {t.navigation.history}
           </Link>
 
           <Link
             href="/admin/settings"
             className={linkClass("/admin/settings")}
           >
-            Settings
+            {t.navigation.settings}
           </Link>
         </>
       )}

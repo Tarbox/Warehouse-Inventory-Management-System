@@ -11,6 +11,8 @@ import {
   useInventoryRealtime,
 } from "../../hooks/useInventoryRealtime";
 
+import { useLocale } from "../../lib/i18n/LocaleProvider";
+
 import {
   ApiError,
   decrementInventory,
@@ -29,6 +31,7 @@ import AppShell from "../../components/layout/AppShell";
 // The business logic is shared between desktop and mobile layouts.
 export default function InventoryPage() {
   const router = useRouter();
+  const { t } = useLocale();
 
   const [user, setUser] =
     useState<User | null>(null);
@@ -158,9 +161,7 @@ export default function InventoryPage() {
       !Number.isInteger(quantity) ||
       quantity < 0
     ) {
-      setError(
-        "Quantity must be a non-negative integer",
-      );
+      setError(t.inventory.setQuantityError);
 
       return;
     }
@@ -212,9 +213,7 @@ export default function InventoryPage() {
         error instanceof ApiError &&
         error.code === "VERSION_CONFLICT"
       ) {
-        setError(
-          "Inventory was changed by another user. Please try again.",
-        );
+        setError(t.inventory.versionConflict);
 
         await load();
 
@@ -224,9 +223,7 @@ export default function InventoryPage() {
       if (error instanceof ApiError) {
         setError(error.message);
       } else {
-        setError(
-          "Failed to set inventory quantity",
-        );
+        setError(t.inventory.setQuantityError);
       }
     } finally {
       setUpdatingId(null);
@@ -294,9 +291,7 @@ export default function InventoryPage() {
       if (error instanceof ApiError) {
         setError(error.message);
       } else {
-        setError(
-          "Failed to update inventory",
-        );
+        setError(t.inventory.quantityValidation);
       }
     } finally {
       setUpdatingId(null);
@@ -325,7 +320,7 @@ export default function InventoryPage() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-slate-100">
         <p className="text-slate-500">
-          Loading inventory...
+          {t.inventory.loading}
         </p>
       </main>
     );
@@ -342,11 +337,11 @@ export default function InventoryPage() {
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
-              Inventory
+              {t.inventory.title}
             </h1>
 
             <p className="mt-1 text-sm text-slate-500">
-              Manage warehouse materials and quantities.
+              {t.inventory.description}
             </p>
           </div>
 
@@ -367,7 +362,7 @@ export default function InventoryPage() {
                 onClick={handleLogout}
                 className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
               >
-                Logout
+                {t.inventory.logout}
               </button>
             </div>
           )}
@@ -377,7 +372,7 @@ export default function InventoryPage() {
         <div className="mb-4">
           <input
             type="search"
-            placeholder="Search materials..."
+            placeholder={t.inventory.searchPlaceholder}
             value={search}
             onChange={(event) =>
               setSearch(
@@ -405,23 +400,23 @@ export default function InventoryPage() {
               <thead className="border-b border-slate-200 bg-slate-50">
                 <tr className="text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                   <th className="px-5 py-3">
-                    Item
+                    {t.inventory.item}
                   </th>
 
                   <th className="px-5 py-3">
-                    Category
+                    {t.inventory.category}
                   </th>
 
                   <th className="px-5 py-3 text-center">
-                    Quantity
+                    {t.inventory.quantity}
                   </th>
 
                   <th className="px-5 py-3">
-                    Status
+                    {t.inventory.status}
                   </th>
 
                   <th className="px-5 py-3 text-right">
-                    Actions
+                    {t.inventory.actions}
                   </th>
                 </tr>
               </thead>
@@ -439,7 +434,7 @@ export default function InventoryPage() {
                       </div>
 
                       <div className="mt-1 text-xs text-slate-400">
-                        Minimum:{" "}
+                        {t.inventory.minimum}: {" "}
                         {item.minimumQuantity}{" "}
                         {item.unit}
                       </div>
@@ -486,7 +481,7 @@ export default function InventoryPage() {
                             }
                             className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700 disabled:opacity-50"
                           >
-                            Save
+                            {t.inventory.save}
                           </button>
 
                           <button
@@ -503,7 +498,7 @@ export default function InventoryPage() {
                             }}
                             className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
                           >
-                            Cancel
+                            {t.inventory.cancel}
                           </button>
                         </div>
                       ) : (
@@ -560,11 +555,11 @@ export default function InventoryPage() {
                     <td className="px-5 py-4">
                       {item.lowStock ? (
                         <span className="inline-flex rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700">
-                          Low Stock
+                          {t.inventory.lowStock}
                         </span>
                       ) : (
                         <span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">
-                          In Stock
+                          {t.inventory.inStock}
                         </span>
                       )}
                     </td>
@@ -585,7 +580,7 @@ export default function InventoryPage() {
                           }
                           className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
                         >
-                          Set Quantity
+                          {t.inventory.setQuantity}
                         </button>
                       )}
                     </td>
@@ -599,7 +594,7 @@ export default function InventoryPage() {
                       colSpan={5}
                       className="px-5 py-12 text-center text-sm text-slate-500"
                     >
-                      No materials found.
+                      {t.inventory.noMaterials}
                     </td>
                   </tr>
                 )}
@@ -633,17 +628,17 @@ export default function InventoryPage() {
 
                   {item.lowStock ? (
                     <span className="shrink-0 rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700">
-                      Low Stock
+                      {t.inventory.lowStock}
                     </span>
                   ) : (
                     <span className="shrink-0 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">
-                      In Stock
+                      {t.inventory.inStock}
                     </span>
                   )}
                 </div>
 
                 <p className="mt-2 text-xs text-slate-400">
-                  Minimum:{" "}
+                  {t.inventory.minimum}: {" "}
                   {item.minimumQuantity}{" "}
                   {item.unit}
                 </p>
@@ -685,7 +680,7 @@ export default function InventoryPage() {
                       }
                       className="rounded-lg bg-slate-900 px-3 py-2.5 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
                     >
-                      Save
+                      {t.inventory.save}
                     </button>
 
                     <button
@@ -702,7 +697,7 @@ export default function InventoryPage() {
                       }}
                       className="rounded-lg border border-slate-300 px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
                     >
-                      Cancel
+                      {t.inventory.cancel}
                     </button>
                   </div>
                 </div>
@@ -765,7 +760,7 @@ export default function InventoryPage() {
                     }
                     className="mt-3 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
                   >
-                    Set Quantity
+                    {t.inventory.setQuantity}
                   </button>
                 </>
               )}
@@ -775,7 +770,7 @@ export default function InventoryPage() {
           {filteredItems.length ===
             0 && (
             <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
-              No materials found.
+              {t.inventory.noMaterials}
             </div>
           )}
         </div>

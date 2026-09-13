@@ -9,8 +9,13 @@ import { useRouter } from "next/navigation";
 
 import { ApiError, login } from "../../lib/api";
 
+import { useLocale } from "../../lib/i18n/LocaleProvider";
+
+import LanguageSwitcher from "../../lib/i18n/LanguageSwitcher";
+
 export default function LoginPage() {
   const router = useRouter();
+  const { t } = useLocale();
 
   const [username, setUsername] =
     useState("");
@@ -41,11 +46,11 @@ export default function LoginPage() {
       if (error instanceof ApiError) {
         setError(
           error.message ||
-            "Invalid username or password",
+            t.login.invalidCredentials,
         );
       } else {
         setError(
-          "Unable to connect to server",
+          t.login.connectionError,
         );
       }
     } finally {
@@ -54,7 +59,11 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
+    <main className="relative flex min-h-screen items-center justify-center bg-slate-100 px-4">
+      <div className="absolute right-4 top-4">
+        <LanguageSwitcher />
+      </div>
+
       <div className="w-full max-w-sm rounded-xl bg-white p-8 shadow">
         <div className="mb-8 text-center">
           <div className="mb-2 text-4xl">
@@ -62,11 +71,11 @@ export default function LoginPage() {
           </div>
 
           <h1 className="text-2xl font-bold">
-            Warehouse Inventory
+            {t.login.title}
           </h1>
 
           <p className="mt-2 text-sm text-slate-500">
-            Sign in to continue
+            {t.login.subtitle}
           </p>
         </div>
 
@@ -79,7 +88,7 @@ export default function LoginPage() {
               htmlFor="username"
               className="mb-1 block text-sm font-medium"
             >
-              Username
+              {t.login.username}
             </label>
 
             <input
@@ -104,7 +113,7 @@ export default function LoginPage() {
               htmlFor="password"
               className="mb-1 block text-sm font-medium"
             >
-              Password
+              {t.login.password}
             </label>
 
             <input
@@ -136,8 +145,8 @@ export default function LoginPage() {
             className="w-full rounded-lg bg-slate-900 px-4 py-2 font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading
-              ? "Logging in..."
-              : "Log in"}
+              ? t.login.submitting
+              : t.login.submit}
           </button>
         </form>
       </div>
