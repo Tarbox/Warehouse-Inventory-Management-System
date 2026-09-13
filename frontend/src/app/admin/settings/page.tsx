@@ -161,110 +161,87 @@ export default function AdminSettingsPage() {
 
             return (
               <div
-                key={setting.key}
-                className="rounded-xl bg-white p-5 shadow"
-              >
-                <div className="mb-4">
-                  <h2 className="font-semibold">
-                    {setting.key}
-                  </h2>
+  key={setting.key}
+  className="rounded-xl bg-white p-5 shadow"
+>
+  <div className="mb-4">
+    <h2 className="font-semibold text-slate-900">
+      {setting.key}
+    </h2>
 
-                  {setting.description && (
-                    <p className="mt-1 text-sm text-slate-500">
-                      {
-                        setting.description
-                      }
-                    </p>
-                  )}
-                </div>
+    {setting.description && (
+      <p className="mt-1 text-sm text-slate-500">
+        {setting.description}
+      </p>
+    )}
+  </div>
 
-                {setting.key ===
-                "session_duration_hours" ? (
-                  <div className="flex max-w-sm gap-3">
-                    <input
-                      type="number"
-                      min={1}
-                      max={168}
-                      defaultValue={
-                        setting.value
-                      }
-                      id={`setting-${setting.key}`}
-                      className="flex-1 rounded-lg border px-3 py-2"
-                    />
+  {setting.key === "session_duration_hours" ? (
+    <div className="flex flex-col gap-3 sm:flex-row sm:max-w-sm">
+      <input
+        type="number"
+        min={1}
+        max={168}
+        defaultValue={setting.value}
+        id={`setting-${setting.key}`}
+        className="w-full flex-1 rounded-lg border px-3 py-2"
+      />
 
-                    <button
-                      type="button"
-                      disabled={busy}
-                      onClick={() => {
-                        const input =
-                          document.getElementById(
-                            `setting-${setting.key}`,
-                          ) as HTMLInputElement;
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => {
+          const input =
+            document.getElementById(
+              `setting-${setting.key}`,
+            ) as HTMLInputElement;
 
-                        void handleSave(
-                          setting,
-                          input.value,
-                        );
-                      }}
-                      className="rounded-lg bg-slate-900 px-4 py-2 text-sm text-white disabled:opacity-50"
-                    >
-                      {busy
-                        ? "Saving..."
-                        : "Save"}
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex max-w-sm gap-3">
-                    <select
-                      id={`setting-${setting.key}`}
-                      defaultValue={
-                        setting.value
-                      }
-                      className="flex-1 rounded-lg border px-3 py-2"
-                    >
-                      <option value="PCS">
-                        PCS
-                      </option>
-                      <option value="BOX">
-                        BOX
-                      </option>
-                      <option value="ROLL">
-                        ROLL
-                      </option>
-                      <option value="PACK">
-                        PACK
-                      </option>
-                      <option value="PAIR">
-                        PAIR
-                      </option>
-                      <option value="OTHER">
-                        OTHER
-                      </option>
-                    </select>
+          void handleSave(
+            setting,
+            input.value,
+          );
+        }}
+        className="w-full rounded-lg bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-800 disabled:opacity-50 sm:w-auto"
+      >
+        {busy ? "Saving..." : "Save"}
+      </button>
+    </div>
+  ) : (
+    <div className="flex flex-col gap-3 sm:flex-row sm:max-w-sm">
+      <select
+        id={`setting-${setting.key}`}
+        defaultValue={setting.value}
+        className="w-full flex-1 rounded-lg border px-3 py-2"
+      >
+        <option value="PCS">PCS</option>
+        <option value="BOX">BOX</option>
+        <option value="ROLL">ROLL</option>
+        <option value="PACK">PACK</option>
+        <option value="PAIR">PAIR</option>
+        <option value="OTHER">OTHER</option>
+      </select>
 
-                    <button
-                      type="button"
-                      disabled={busy}
-                      onClick={() => {
-                        const input =
-                          document.getElementById(
-                            `setting-${setting.key}`,
-                          ) as HTMLSelectElement;
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => {
+          const input =
+            document.getElementById(
+              `setting-${setting.key}`,
+            ) as HTMLSelectElement;
 
-                        void handleSave(
-                          setting,
-                          input.value,
-                        );
-                      }}
-                      className="rounded-lg bg-slate-900 px-4 py-2 text-sm text-white disabled:opacity-50"
-                    >
-                      {busy
-                        ? "Saving..."
-                        : "Save"}
-                    </button>
-                  </div>
-                )}
-              </div>
+          void handleSave(
+            setting,
+            input.value,
+          );
+        }}
+        className="w-full rounded-lg bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-800 disabled:opacity-50 sm:w-auto"
+      >
+        {busy ? "Saving..." : "Save"}
+      </button>
+    </div>
+  )}
+</div>
             );
           },
         )}

@@ -373,135 +373,230 @@ export default function AdminUsersPage() {
       )}
 
       <div className="overflow-hidden rounded-xl bg-white shadow">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[950px]">
-            <thead className="border-b bg-slate-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm">
-                  Username
-                </th>
+  {/* Desktop table */}
+  <div className="hidden md:block overflow-x-auto">
+    <table className="w-full min-w-[950px]">
+      <thead className="border-b bg-slate-50">
+        <tr>
+          <th className="px-4 py-3 text-left text-sm">
+            Username
+          </th>
 
-                <th className="px-4 py-3 text-left text-sm">
-                  Role
-                </th>
+          <th className="px-4 py-3 text-left text-sm">
+            Role
+          </th>
 
-                <th className="px-4 py-3 text-left text-sm">
-                  Status
-                </th>
+          <th className="px-4 py-3 text-left text-sm">
+            Status
+          </th>
 
-                <th className="px-4 py-3 text-right text-sm">
-                  Actions
-                </th>
-              </tr>
-            </thead>
+          <th className="px-4 py-3 text-right text-sm">
+            Actions
+          </th>
+        </tr>
+      </thead>
 
-            <tbody>
-              {users.map(
-                (user) => (
-                  <tr
-                    key={user.id}
-                    className="border-b last:border-0"
-                  >
-                    <td className="px-4 py-3 font-medium">
-                      {user.username}
-                    </td>
+      <tbody>
+        {users.map((user) => (
+          <tr
+            key={user.id}
+            className="border-b last:border-0"
+          >
+            <td className="px-4 py-3 font-medium">
+              {user.username}
+            </td>
 
-                    <td className="px-4 py-3">
-                      <select
-                        value={
-                          user.role.id
-                        }
-                        onChange={(
-                          event,
-                        ) =>
-                          handleRoleChange(
-                            user,
-                            Number(
-                              event.target
-                                .value,
-                            ),
-                          )
-                        }
-                        className="rounded-lg border px-2 py-1 text-sm"
-                      >
-                        <option value={1}>
-                          WORKER
-                        </option>
+            <td className="px-4 py-3">
+              <select
+                value={user.role.id}
+                onChange={(event) =>
+                  void handleRoleChange(
+                    user,
+                    Number(event.target.value),
+                  )
+                }
+                className="rounded-lg border px-2 py-1 text-sm"
+              >
+                <option value={1}>
+                  WORKER
+                </option>
 
-                        <option value={2}>
-                          ADMIN
-                        </option>
-                      </select>
-                    </td>
+                <option value={2}>
+                  ADMIN
+                </option>
+              </select>
+            </td>
 
-                    <td className="px-4 py-3">
-                      {user.isActive ? (
-                        <span className="rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">
-                          ACTIVE
-                        </span>
-                      ) : (
-                        <span className="rounded-full bg-slate-200 px-2 py-1 text-xs text-slate-600">
-                          DISABLED
-                        </span>
-                      )}
-                    </td>
-
-                    <td className="flex justify-end gap-2">
-                      <div className="flex gap-2">
-                        {user.isActive ? (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              void handleDisable(user)
-                            }
-                            className="rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700"
-                          >
-                            Disable
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              void handleEnable(user)
-                            }
-                            className="rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700"
-                          >
-                            Enable
-                          </button>
-                        )}
-
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleResetPassword(
-                              user,
-                            )
-                          }
-                          className="rounded-lg border px-3 py-1.5 text-sm"
-                        >
-                          Reset password
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleDelete(
-                              user,
-                            )
-                          }
-                          className="rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-700"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ),
+            <td className="px-4 py-3">
+              {user.isActive ? (
+                <span className="rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">
+                  ACTIVE
+                </span>
+              ) : (
+                <span className="rounded-full bg-slate-200 px-2 py-1 text-xs text-slate-600">
+                  DISABLED
+                </span>
               )}
-            </tbody>
-          </table>
+            </td>
+
+            <td className="px-4 py-3">
+              <div className="flex justify-end gap-2">
+                {user.isActive ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      void handleDisable(user)
+                    }
+                    className="rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700"
+                  >
+                    Disable
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      void handleEnable(user)
+                    }
+                    className="rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700"
+                  >
+                    Enable
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleResetPassword(user)
+                  }
+                  className="rounded-lg border px-3 py-1.5 text-sm"
+                >
+                  Reset password
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleDelete(user)
+                  }
+                  className="rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-700"
+                >
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  {/* Mobile cards */}
+  <div className="divide-y md:hidden">
+    {users.map((user) => (
+      <div
+        key={user.id}
+        className="p-4"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="font-semibold text-slate-900 break-words">
+              {user.username}
+            </p>
+
+            <p className="mt-1 text-xs text-slate-500">
+              User ID: {user.id}
+            </p>
+          </div>
+
+          {user.isActive ? (
+            <span className="shrink-0 rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">
+              ACTIVE
+            </span>
+          ) : (
+            <span className="shrink-0 rounded-full bg-slate-200 px-2 py-1 text-xs text-slate-600">
+              DISABLED
+            </span>
+          )}
+        </div>
+
+        <div className="mt-4">
+          <label className="mb-1 block text-xs font-medium text-slate-500">
+            Role
+          </label>
+
+          <select
+            value={user.role.id}
+            onChange={(event) =>
+              void handleRoleChange(
+                user,
+                Number(event.target.value),
+              )
+            }
+            className="w-full rounded-lg border px-3 py-2 text-sm"
+          >
+            <option value={1}>
+              WORKER
+            </option>
+
+            <option value={2}>
+              ADMIN
+            </option>
+          </select>
+        </div>
+
+        <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+          {user.isActive ? (
+            <button
+              type="button"
+              onClick={() =>
+                void handleDisable(user)
+              }
+              className="rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700"
+            >
+              Disable
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() =>
+                void handleEnable(user)
+              }
+              className="rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700"
+            >
+              Enable
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() =>
+              handleResetPassword(user)
+            }
+            className="rounded-lg border px-3 py-2 text-sm"
+          >
+            Reset password
+          </button>
+
+          <button
+            type="button"
+            onClick={() =>
+              handleDelete(user)
+            }
+            className="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-700"
+          >
+            Delete
+          </button>
         </div>
       </div>
+    ))}
+
+    {users.length === 0 && (
+      <div className="px-4 py-10 text-center text-slate-500">
+        No users found.
+      </div>
+    )}
+  </div>
+</div>
     </section>
   );
 }
