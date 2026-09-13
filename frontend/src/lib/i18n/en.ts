@@ -17,6 +17,9 @@ export const en = {
     edit: "Edit",
     close: "Close",
     loading: "Loading...",
+    openNavigation: "Open navigation",
+    closeNavigation: "Close navigation",
+    navigation: "Navigation",
   },
 
   login: {
@@ -89,4 +92,17 @@ categories: {
   save: "Save",
   cancel: "Cancel",
 },
+
+dashboard: {
+  title: "Dashboard",
+  welcome: "Welcome",
+  materials: "Materials",
+  categories: "Categories",
+  lowStock: "Low Stock",
+  totalQuantity: "Total Quantity",
+  categoryImage: "Category image",
+  materialsCount: "materials",
+  loading: "Loading dashboard...",
+  loadError: "Failed to load dashboard",
+}
 } as const;

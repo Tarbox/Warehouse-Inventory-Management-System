@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "../../components/layout/AppShell";
+import { useLocale } from "../../lib/i18n/LocaleProvider";
 
 
 import {
@@ -21,6 +22,7 @@ import {
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { t } = useLocale();
 
   const [user, setUser] =
     useState<User | null>(null);
@@ -36,6 +38,8 @@ export default function DashboardPage() {
 
   const [error, setError] =
     useState<string | null>(null);
+  
+  
 
   useEffect(() => {
     async function loadDashboard() {
@@ -69,7 +73,7 @@ export default function DashboardPage() {
         setError(
           error instanceof ApiError
             ? error.message
-            : "Failed to load dashboard",
+            : t.dashboard.loadError,
         );
       } finally {
         setLoading(false);
@@ -175,7 +179,7 @@ const handleCategoryUpdated = useCallback(() => {
     return (
       <main className="flex min-h-screen items-center justify-center bg-slate-100">
         <p className="text-slate-500">
-          Loading dashboard...
+          {t.dashboard.loading}
         </p>
       </main>
     );
@@ -216,17 +220,17 @@ const handleCategoryUpdated = useCallback(() => {
     >
     <div>
       <h1 className="text-2xl font-bold text-slate-900">
-        Dashboard
+        {t.dashboard.title}
       </h1>
 
       <p className="mt-1 text-sm text-slate-500">
-        Welcome, {user?.username}
+        {t.dashboard.welcome}, {user?.username}
       </p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border bg-white p-5">
           <p className="text-sm text-slate-500">
-            Materials
+            {t.dashboard.materials}
           </p>
           <p className="mt-2 text-3xl font-bold">
             {items.length}
@@ -235,7 +239,7 @@ const handleCategoryUpdated = useCallback(() => {
 
         <div className="rounded-xl border bg-white p-5">
           <p className="text-sm text-slate-500">
-            Categories
+            {t.dashboard.categories}
           </p>
           <p className="mt-2 text-3xl font-bold">
             {categories.length}
@@ -244,7 +248,7 @@ const handleCategoryUpdated = useCallback(() => {
 
         <div className="rounded-xl border bg-white p-5">
           <p className="text-sm text-slate-500">
-            Low Stock
+            {t.dashboard.lowStock}
           </p>
           <p className="mt-2 text-3xl font-bold">
             {lowStockCount}
@@ -253,7 +257,7 @@ const handleCategoryUpdated = useCallback(() => {
 
         <div className="rounded-xl border bg-white p-5">
           <p className="text-sm text-slate-500">
-            Total Quantity
+            {t.dashboard.totalQuantity}
           </p>
           <p className="mt-2 text-3xl font-bold">
             {totalQuantity}
@@ -264,7 +268,7 @@ const handleCategoryUpdated = useCallback(() => {
     <section className="mt-8">
   <div className="flex items-center justify-between">
     <h2 className="text-lg font-semibold text-slate-900">
-      Categories
+      {t.dashboard.categories}
     </h2>
   </div>
 
@@ -276,7 +280,7 @@ const handleCategoryUpdated = useCallback(() => {
       >
         <div className="flex h-32 items-center justify-center bg-slate-200">
           <span className="text-sm text-slate-500">
-            Category image
+            {t.dashboard.categoryImage}
           </span>
         </div>
 
@@ -286,7 +290,7 @@ const handleCategoryUpdated = useCallback(() => {
           </h3>
 
           <p className="mt-1 text-sm text-slate-500">
-            {category.materialCount} materials
+            {category.materialCount} {t.dashboard.materialsCount}
           </p>
         </div>
       </div>

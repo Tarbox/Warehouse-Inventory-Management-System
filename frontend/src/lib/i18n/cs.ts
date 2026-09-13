@@ -17,6 +17,9 @@ export const cs = {
     edit: "Upravit",
     close: "Zavřít",
     loading: "Načítání...",
+    openNavigation: "Otevřít navigaci",
+    closeNavigation: "Zavřít navigaci",
+    navigation: "Navigace",
   },
 
   login: {
@@ -89,4 +92,17 @@ categories: {
   save: "Uložit",
   cancel: "Zrušit",
 },
+
+dashboard: {
+  title: "Přehled",
+  welcome: "Vítejte",
+  materials: "Materiály",
+  categories: "Kategorie",
+  lowStock: "Nízký stav",
+  totalQuantity: "Celkové množství",
+  categoryImage: "Obrázek kategorie",
+  materialsCount: "materiálů",
+  loading: "Načítání přehledu...",
+  loadError: "Nepodařilo se načíst přehled",
+}
 } as const;

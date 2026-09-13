@@ -17,7 +17,7 @@ export default function AppShell({
   isAdmin = false,
 }: AppShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { locale, setLocale } = useLocale();
+  const { t } = useLocale();
 
   return (
     <div className="min-h-screen bg-slate-100">
@@ -29,7 +29,7 @@ export default function AppShell({
               type="button"
               onClick={() => setMobileOpen(true)}
               className="rounded-lg p-2 text-slate-300 hover:bg-slate-800 hover:text-white md:hidden"
-              aria-label="Open navigation"
+              aria-label={t.common.openNavigation}
             >
               <span className="text-xl">☰</span>
             </button>
@@ -58,7 +58,7 @@ export default function AppShell({
     {/* Overlay */}
     <button
       type="button"
-      aria-label="Close navigation"
+      aria-label={t.common.closeNavigation}
       onClick={() => setMobileOpen(false)}
       className="absolute inset-0 bg-black/40"
     />
@@ -67,14 +67,14 @@ export default function AppShell({
     <aside className="relative h-full w-72 bg-white shadow-xl">
       <div className="flex h-16 items-center justify-between border-b border-slate-200 px-4">
         <span className="font-semibold text-slate-900">
-          Navigation
+          {t.common.navigation}
         </span>
 
         <button
           type="button"
           onClick={() => setMobileOpen(false)}
           className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
-          aria-label="Close navigation"
+          aria-label={t.common.closeNavigation}
         >
           ✕
         </button>
