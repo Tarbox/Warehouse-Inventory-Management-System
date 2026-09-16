@@ -15,16 +15,20 @@ type UpdateCategoryInput = {
 
 export async function listCategories() {
   return prisma.category.findMany({
-    orderBy: {
-      name: "asc",
-    },
+  where: {
+    isActive: true,
+  },
 
-    select: {
-      id: true,
-      name: true,
-      description: true,
-    },
-  });
+  orderBy: {
+    name: "asc",
+  },
+
+  select: {
+    id: true,
+    name: true,
+    description: true,
+  },
+});
 }
 
 export async function createCategory(
@@ -146,23 +150,28 @@ export async function deleteCategory(
   }
 
   const materialCount =
-    await prisma.material.count({
-      where: {
-        categoryId: id,
-      },
-    });
-
-  if (materialCount > 0) {
-    throw new Error(
-      "CATEGORY_IN_USE",
-    );
-  }
-
-  await prisma.category.delete({
+  await prisma.material.count({
     where: {
-      id,
+      categoryId: id,
+      isActive: true,
     },
   });
+
+if (materialCount > 0) {
+  throw new Error(
+    "CATEGORY_IN_USE",
+  );
+}
+
+await prisma.category.update({
+  where: {
+    id,
+  },
+
+  data: {
+    isActive: false,
+  },
+});
 
   broadcast({
     type: "category.deleted",

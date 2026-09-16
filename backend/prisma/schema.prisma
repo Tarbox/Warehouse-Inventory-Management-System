@@ -77,12 +77,11 @@ model Session {
 // Category model representing categories of materials in the system
 // Each category has a unique name and an optional description, and can be associated with multiple materials
 model Category {
-  id          Int     @id @default(autoincrement())
-  name        String  @unique
+  id Int @id @default(autoincrement())
+  name String @unique
   description String?
-
+  isActive Boolean @default(true)
   materials Material[]
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
