@@ -18,11 +18,13 @@ import { useLocale } from "../../lib/i18n/LocaleProvider";
 import {
   ApiError,
   decrementInventory,
+  getCategories,
   getCurrentUser,
   getInventory,
   incrementInventory,
   setInventory,
   logout,
+  type Category,
   type InventorySortBy,
   type InventorySortOrder,
   type InventoryItem,
@@ -57,6 +59,13 @@ function InventoryContent() {
   const lowStockOnly =
     searchParams.get("lowStock") === "true";
 
+  const categoryIdParam =
+    searchParams.get("categoryId");
+
+  const categoryId = categoryIdParam
+    ? Number(categoryIdParam)
+    : undefined;
+
   const [user, setUser] =
     useState<User | null>(null);
 
@@ -68,6 +77,9 @@ function InventoryContent() {
 
   const [sortBy, setSortBy] =
     useState<InventorySortBy>("name");
+
+  const [categories, setCategories] = 
+    useState<Category[]>([]);
 
   const [sortOrder, setSortOrder] =
     useState<InventorySortOrder>("asc");
@@ -101,6 +113,7 @@ function InventoryContent() {
             getInventory(
               currentSortBy,
               currentSortOrder,
+              categoryId,
             ),
           ]);
 
@@ -120,7 +133,7 @@ function InventoryContent() {
         setLoading(false);
       }
     },
-    [router, sortBy, sortOrder],
+    [router, sortBy, sortOrder, categoryId],
   );
 
   // Apply realtime updates only when the received version
@@ -169,6 +182,26 @@ function InventoryContent() {
     onInventoryUpdated:
       handleInventoryUpdated,
   });
+
+  // loadCategory
+  useEffect(() => {
+  async function loadCategories() {
+    try {
+      const response = await getCategories();
+      setCategories(response.items);
+    } catch (error) {
+      console.error("Failed to load categories", error);
+    }
+  }
+
+  loadCategories();
+}, []);
+
+const activeCategory = categoryId
+  ? categories.find(
+      (category) => category.id === categoryId,
+    )
+  : undefined;
 
   // Load initial page data.
   useEffect(() => {
@@ -505,6 +538,19 @@ function InventoryContent() {
             </button>
           </div>
         )}
+        {activeCategory && (
+  <div>
+    <span>
+      Category: {activeCategory.name}
+    </span>
+
+    <button
+      onClick={() => router.push("/inventory")}
+    >
+      ×
+    </button>
+  </div>
+)}
 
         {/* Mobile sorting */}
         <div className="mb-4 flex gap-2 md:hidden">

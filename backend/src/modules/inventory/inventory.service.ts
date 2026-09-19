@@ -14,7 +14,7 @@ export async function listInventory(
   query: ListInventoryQuery,
 ) {
 
-  const { sortBy, sortOrder } = query;
+  const { sortBy, sortOrder, categoryId, } = query;
 
   const orderBy: Prisma.MaterialOrderByWithRelationInput =
     sortBy === "category"
@@ -37,6 +37,12 @@ export async function listInventory(
     await prisma.material.findMany({
       where: {
         isActive: true,
+
+        ...(categoryId
+          ? {
+              categoryId,
+            }
+          : {}),
       },
 
       include: {

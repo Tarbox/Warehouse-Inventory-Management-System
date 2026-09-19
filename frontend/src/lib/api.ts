@@ -168,11 +168,16 @@ export async function getCurrentUser() {
 export async function getInventory(
   sortBy: InventorySortBy = "name",
   sortOrder: InventorySortOrder = "asc",
+  categoryId?: number,
 ) {
   const params = new URLSearchParams({
     sortBy,
     sortOrder,
   });
+
+  if (categoryId !== undefined) {
+    params.set("categoryId", String(categoryId));
+  }
 
   return request<InventoryResponse>(
     `/api/inventory?${params.toString()}`,

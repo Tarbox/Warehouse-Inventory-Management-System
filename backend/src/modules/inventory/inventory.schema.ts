@@ -36,6 +36,12 @@ export const listInventoryQuerySchema = z.object({
   sortOrder: z
     .enum(["asc", "desc"])
     .default("asc"),
+
+  categoryId: z.coerce
+    .number()
+    .int()
+    .positive()
+    .optional(),
 });
 
 export type ListInventoryQuery =
