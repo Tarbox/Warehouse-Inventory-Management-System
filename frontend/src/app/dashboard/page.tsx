@@ -363,12 +363,12 @@ export default function DashboardPage() {
                     }
                     className="cursor-pointer overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:border-slate-300 hover:shadow-md"
                   >
-                    <div className="h-32 bg-slate-200">
+                    <div className="h-32 bg-white">
   {category.imageUrl ? (
     <img
       src={category.imageUrl}
       alt={category.name}
-      className="h-full w-full object-cover"
+      className="h-full w-full object-contain p-3"
     />
   ) : (
     <div className="flex h-full items-center justify-center">

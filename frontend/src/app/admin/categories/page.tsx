@@ -503,6 +503,26 @@ useInventoryRealtime({
     placeholder="/categories/packaging.svg"
   />
 </div>
+
+<div>
+  <label className="mb-2 block text-sm font-medium">
+    Preview
+  </label>
+
+              <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
+                {imageUrl ? (
+                  <img
+                    src={imageUrl}
+                    alt="Category preview"
+                    className="h-40 w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-40 items-center justify-center text-sm text-slate-500">
+                    No image selected
+                  </div>
+                )}
+              </div>
+            </div>
             <div className="flex justify-end gap-2">
               <button
                 type="button"
