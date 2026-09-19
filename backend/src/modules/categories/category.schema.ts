@@ -14,6 +14,13 @@ export const createCategorySchema = z.object({
     .max(500)
     .nullable()
     .optional(),
+
+  imageUrl: z
+    .string()
+    .trim()
+    .url()
+    .nullable()
+    .optional(),
 });
 
 // Schema for validating category update requests
@@ -23,6 +30,13 @@ export const updateCategorySchema = z.object({
     .string()
     .trim()
     .max(500)
+    .nullable()
+    .optional(),
+
+  imageUrl: z
+    .string()
+    .trim()
+    .url()
     .nullable()
     .optional(),
 });

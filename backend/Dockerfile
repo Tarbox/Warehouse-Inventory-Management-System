@@ -11,6 +11,7 @@ COPY prisma.config.ts ./
 COPY prisma ./prisma
 COPY src ./src
 
+RUN DATABASE_URL="postgresql://user:password@localhost:5432/database" npx prisma generate
 RUN npm run build
 
 # The runtime stage uses a smaller Node.js image to run the application in production.

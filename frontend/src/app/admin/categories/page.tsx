@@ -46,6 +46,9 @@ export default function AdminCategoriesPage() {
   const [description, setDescription] =
     useState("");
 
+  const [imageUrl, setImageUrl] =
+    useState("");
+
   const [saving, setSaving] =
     useState(false);
 
@@ -113,6 +116,7 @@ useInventoryRealtime({
     setDescription("");
     setError(null);
     setFormOpen(true);
+    setImageUrl("");
   }
 
   function openEditForm(
@@ -123,6 +127,9 @@ useInventoryRealtime({
     setDescription(
       category.description ?? "",
     );
+    setImageUrl(
+      category.imageUrl ?? "",
+    );
     setError(null);
     setFormOpen(true);
   }
@@ -132,6 +139,7 @@ useInventoryRealtime({
     setEditingCategory(null);
     setName("");
     setDescription("");
+    setImageUrl("");
   }
 
   async function handleSubmit(
@@ -142,6 +150,8 @@ useInventoryRealtime({
     const trimmedName = name.trim();
     const trimmedDescription =
       description.trim();
+    const trimmedImageUrl =
+      imageUrl.trim();
 
     if (!trimmedName) {
       setError(
@@ -161,6 +171,8 @@ useInventoryRealtime({
             name: trimmedName,
             description:
               trimmedDescription || null,
+            imageUrl:
+              trimmedImageUrl || null,
           },
         );
       } else {
@@ -168,6 +180,8 @@ useInventoryRealtime({
           name: trimmedName,
           description:
             trimmedDescription || null,
+          imageUrl:
+            trimmedImageUrl || null,
         });
       }
 
@@ -470,7 +484,25 @@ useInventoryRealtime({
                 placeholder={t.categories.descriptionPlaceholder}
               />
             </div>
+              <div>
+  <label
+    htmlFor="category-image-url"
+    className="mb-1 block text-sm font-medium"
+  >
+    Image URL
+  </label>
 
+  <input
+    id="category-image-url"
+    type="url"
+    value={imageUrl}
+    onChange={(event) =>
+      setImageUrl(event.target.value)
+    }
+    className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-slate-500"
+    placeholder="https://example.com/image.jpg"
+  />
+</div>
             <div className="flex justify-end gap-2">
               <button
                 type="button"

@@ -290,6 +290,7 @@ export type Category = {
   id: number;
   name: string;
   description: string | null;
+  imageUrl: string | null;
 };
 
 // Response returned when requesting the list of categories from the Backend API.
@@ -308,12 +309,14 @@ export async function getCategories() {
 export type CreateCategoryInput = {
   name: string;
   description?: string | null;
+  imageUrl?: string | null;
 };
 
 // Input data structure for updating a category.
 export type UpdateCategoryInput = {
   name?: string;
   description?: string | null;
+  imageUrl?: string | null;
 };
 
 // Create a new category in the Backend API.

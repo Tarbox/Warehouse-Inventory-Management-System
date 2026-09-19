@@ -6,11 +6,13 @@ import {
 type CreateCategoryInput = {
   name: string;
   description?: string | null;
+  imageUrl?: string | null;
 };
 
 type UpdateCategoryInput = {
   name?: string;
   description?: string | null;
+  imageUrl?: string | null;
 };
 
 export async function listCategories() {
@@ -27,6 +29,7 @@ export async function listCategories() {
     id: true,
     name: true,
     description: true,
+    imageUrl: true,
   },
 });
 }
@@ -59,6 +62,7 @@ export async function createCategory(
         id: true,
         name: true,
         description: true,
+        imageUrl: true,
       },
     });
 
@@ -120,6 +124,7 @@ export async function updateCategory(
     id: true,
     name: true,
     description: true,
+    imageUrl: true,
   },
 });
 

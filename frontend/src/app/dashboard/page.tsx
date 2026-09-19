@@ -363,11 +363,21 @@ export default function DashboardPage() {
                     }
                     className="cursor-pointer overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:border-slate-300 hover:shadow-md"
                   >
-                    <div className="flex h-32 items-center justify-center bg-slate-200">
-                      <span className="text-sm text-slate-500">
-                        {t.dashboard.categoryImage}
-                      </span>
-                    </div>
+                    <div className="h-32 bg-slate-200">
+  {category.imageUrl ? (
+    <img
+      src={category.imageUrl}
+      alt={category.name}
+      className="h-full w-full object-cover"
+    />
+  ) : (
+    <div className="flex h-full items-center justify-center">
+      <span className="text-sm text-slate-500">
+        {t.dashboard.categoryImage}
+      </span>
+    </div>
+  )}
+</div>
 
                     <div className="p-4">
                       <h3 className="font-semibold text-slate-900">
