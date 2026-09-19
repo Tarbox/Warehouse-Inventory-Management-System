@@ -35,7 +35,7 @@ export default function AppShell({
             </button>
 
             <Link
-              href="/inventory"
+              href="/dashboard"
               className="text-lg font-semibold tracking-tight"
             >
               Warehouse Inventory
