@@ -494,13 +494,13 @@ useInventoryRealtime({
 
   <input
     id="category-image-url"
-    type="url"
+    type="text"
     value={imageUrl}
     onChange={(event) =>
       setImageUrl(event.target.value)
     }
     className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-slate-500"
-    placeholder="https://example.com/image.jpg"
+    placeholder="/categories/packaging.svg"
   />
 </div>
             <div className="flex justify-end gap-2">

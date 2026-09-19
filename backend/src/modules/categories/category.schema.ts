@@ -16,11 +16,19 @@ export const createCategorySchema = z.object({
     .optional(),
 
   imageUrl: z
-    .string()
-    .trim()
-    .url()
-    .nullable()
-    .optional(),
+  .string()
+  .trim()
+  .refine(
+    (value) =>
+      value.startsWith("/") ||
+      value.startsWith("https://") ||
+      value.startsWith("http://"),
+    {
+      message: "Invalid image URL",
+    },
+  )
+  .nullable()
+  .optional(),
 });
 
 // Schema for validating category update requests
@@ -34,9 +42,17 @@ export const updateCategorySchema = z.object({
     .optional(),
 
   imageUrl: z
-    .string()
-    .trim()
-    .url()
-    .nullable()
-    .optional(),
+  .string()
+  .trim()
+  .refine(
+    (value) =>
+      value.startsWith("/") ||
+      value.startsWith("https://") ||
+      value.startsWith("http://"),
+    {
+      message: "Invalid image URL",
+    },
+  )
+  .nullable()
+  .optional(),
 });
