@@ -356,7 +356,12 @@ export default function DashboardPage() {
                 (category) => (
                   <div
                     key={category.id}
-                    className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
+                    onClick={() =>
+                      router.push(
+                          `/inventory?categoryId=${category.id}`,
+                      )
+                    }
+                    className="cursor-pointer overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:border-slate-300 hover:shadow-md"
                   >
                     <div className="flex h-32 items-center justify-center bg-slate-200">
                       <span className="text-sm text-slate-500">
