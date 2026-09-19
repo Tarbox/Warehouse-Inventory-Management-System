@@ -80,6 +80,7 @@ model Category {
   id Int @id @default(autoincrement())
   name String @unique
   description String?
+  imageUrl String?
   isActive Boolean @default(true)
   materials Material[]
   createdAt DateTime @default(now())
