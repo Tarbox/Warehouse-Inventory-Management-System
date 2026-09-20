@@ -613,7 +613,7 @@ const activeCategory = categoryId
             <table className="w-full min-w-[800px] text-sm">
               <thead className="border-b border-slate-200 bg-slate-50">
                 <tr className="text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  <th className="px-5 py-3">
+                  <th className="px-4 py-2.5">
                     <button
                       type="button"
                       onClick={() =>
@@ -631,7 +631,7 @@ const activeCategory = categoryId
                     </button>
                   </th>
 
-                  <th className="px-5 py-3">
+                  <th className="px-4 py-2.5">
                     <button
                       type="button"
                       onClick={() =>
@@ -651,7 +651,7 @@ const activeCategory = categoryId
                     </button>
                   </th>
 
-                  <th className="px-5 py-3 text-center">
+                  <th className="px-4 py-2.5 text-center">
                     <button
                       type="button"
                       onClick={() =>
@@ -671,7 +671,7 @@ const activeCategory = categoryId
                     </button>
                   </th>
 
-                  <th className="px-5 py-3">
+                  <th className="px-4 py-2.5">
                     <button
                       type="button"
                       onClick={() =>
@@ -691,7 +691,7 @@ const activeCategory = categoryId
                     </button>
                   </th>
 
-                  <th className="px-5 py-3 text-right">
+                  <th className="px-4 py-2.5 text-right">
                     {t.inventory.actions}
                   </th>
                 </tr>
@@ -702,10 +702,14 @@ const activeCategory = categoryId
                   (item) => (
                     <tr
                       key={item.id}
-                      className="hover:bg-slate-50"
+                      className={
+                        item.lowStock
+                          ? "border-t border-red-200 bg-red-50 hover:bg-red-100"
+                          : "border-t border-slate-100 hover:bg-slate-50"
+                      }
                     >
                       {/* Item */}
-                      <td className="px-5 py-4">
+                      <td className="px-4 py-3">
                         <div className="font-medium text-slate-900">
                           {item.name}
                         </div>
@@ -720,7 +724,7 @@ const activeCategory = categoryId
                       </td>
 
                       {/* Category */}
-                      <td className="px-5 py-4 text-slate-600">
+                      <td className="px-4 py-3 text-slate-600">
                         {
                           item.category
                             .name
@@ -728,7 +732,7 @@ const activeCategory = categoryId
                       </td>
 
                       {/* Quantity */}
-                      <td className="px-5 py-4">
+                      <td className="px-4 py-3">
                         {editingId ===
                         item.id ? (
                           <div className="flex items-center justify-center gap-2">
@@ -796,10 +800,8 @@ const activeCategory = categoryId
                             <button
                               type="button"
                               disabled={
-                                updatingId ===
-                                  item.id ||
-                                item.quantity ===
-                                  0
+                                updatingId === item.id ||
+                                item.quantity === 0
                               }
                               onClick={() =>
                                 changeQuantity(
@@ -807,16 +809,15 @@ const activeCategory = categoryId
                                   "decrement",
                                 )
                               }
-                              className="h-8 w-8 rounded-lg border border-slate-300 font-bold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                              className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-300 bg-white text-lg font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                              aria-label={`Decrease ${item.name} quantity`}
                             >
                               −
                             </button>
 
-                            <div className="w-16 text-center">
-                              <div className="font-semibold text-slate-900">
-                                {
-                                  item.quantity
-                                }
+                            <div className="min-w-20 text-center">
+                              <div className="text-base font-bold tabular-nums text-slate-900">
+                                {item.quantity}
                               </div>
 
                               <div className="text-xs text-slate-400">
@@ -827,8 +828,7 @@ const activeCategory = categoryId
                             <button
                               type="button"
                               disabled={
-                                updatingId ===
-                                item.id
+                                updatingId === item.id
                               }
                               onClick={() =>
                                 changeQuantity(
@@ -836,7 +836,8 @@ const activeCategory = categoryId
                                   "increment",
                                 )
                               }
-                              className="h-8 w-8 rounded-lg border border-slate-300 font-bold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                              className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-300 bg-white text-lg font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                              aria-label={`Increase ${item.name} quantity`}
                             >
                               +
                             </button>
@@ -845,7 +846,7 @@ const activeCategory = categoryId
                       </td>
 
                       {/* Status */}
-                      <td className="px-5 py-4">
+                      <td className="px-4 py-3">
                         {item.lowStock ? (
                           <span className="inline-flex rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700">
                             {
@@ -864,7 +865,7 @@ const activeCategory = categoryId
                       </td>
 
                       {/* Actions */}
-                      <td className="px-5 py-4 text-right">
+                      <td className="px-4 py-3 text-right">
                         {editingId !==
                           item.id && (
                           <button
@@ -878,7 +879,7 @@ const activeCategory = categoryId
                                 item,
                               )
                             }
-                            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                            className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
                           >
                             {
                               t.inventory
