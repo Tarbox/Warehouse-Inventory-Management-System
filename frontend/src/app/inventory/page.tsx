@@ -13,6 +13,8 @@ import {
   useInventoryRealtime,
 } from "../../hooks/useInventoryRealtime";
 
+import RealtimeStatus from "../../components/realtime/RealtimeStatus";
+
 import { useLocale } from "../../lib/i18n/LocaleProvider";
 
 import {
@@ -185,6 +187,7 @@ function InventoryContent() {
     );
 
   // Subscribe to realtime inventory updates.
+  const { status: realtimeStatus } =
   useInventoryRealtime({
     onInventoryUpdated:
       handleInventoryUpdated,
@@ -479,8 +482,12 @@ const activeCategory = categoryId
             <p className="mt-1 text-sm text-slate-500">
               {t.inventory.description}
             </p>
-          </div>
+             <RealtimeStatus
+              status={realtimeStatus}
+          />
 
+          </div>
+          
           {user && (
             <div className="flex items-center gap-3">
               <div className="text-right">

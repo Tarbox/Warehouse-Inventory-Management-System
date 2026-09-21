@@ -131,5 +131,13 @@ dashboard: {
   viewCategories: "Zobrazit kategorie",
   viewLowStock: "Zobrazit položky s nízkým stavem",
   noCategories: "Nejsou k dispozici žádné kategorie",
-}
+},
+
+realtime: {
+  connected: "Realtime připojeno",
+  disconnected:
+    "Realtime připojení bylo ztraceno. Aktualizace mohou být opožděné.",
+  reconnecting:
+    "Obnovování realtime připojení...",
+},
 } as const;

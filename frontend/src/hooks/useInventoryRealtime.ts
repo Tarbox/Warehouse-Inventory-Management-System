@@ -3,6 +3,7 @@
 import {
   useEffect,
   useRef,
+  useState,
 } from "react";
 
 type InventoryUpdatedEvent = {
@@ -76,6 +77,11 @@ type CategoryUpdatedEvent = {
   };
 };
 
+export type RealtimeStatus =
+  | "connected"
+  | "disconnected"
+  | "reconnecting";
+
 
 type UseInventoryRealtimeOptions = {
   onInventoryUpdated?: (
@@ -120,6 +126,11 @@ export function useInventoryRealtime({
   const socketRef =
     useRef<WebSocket | null>(null);
 
+    const [status, setStatus] =
+  useState<RealtimeStatus>(
+    "reconnecting",
+  );
+
 // The `reconnectTimerRef` is a reference to the timer used for scheduling reconnection attempts. It is initialized to `null` and will hold the ID of the timer when a reconnection attempt is scheduled.
   const reconnectTimerRef =
     useRef<
@@ -156,12 +167,13 @@ export function useInventoryRealtime({
         () => {
           reconnectAttemptRef.current = 0;
 
+          setStatus("connected");
+
           console.log(
             "Realtime connection established",
           );
         },
       );
-
 // The `message` event listener is set up to handle incoming messages from the WebSocket connection. When a message is received, it attempts to parse the message data as JSON and checks if it is an `InventoryUpdatedEvent`. If it is, the `onInventoryUpdated` callback is called with the event's payload. If the message cannot be parsed or is not of the expected type, an error is logged to the console.
 // The `close` event listener is set up to handle the WebSocket connection being closed. If the closure was not initiated by the component (i.e., `closedByComponent` is false), it schedules a reconnection attempt using an exponential backoff strategy. The delay for the next reconnection attempt is calculated based on the number of previous attempts, with a maximum delay of 10 seconds.
 // The `error` event listener is set up to handle any errors that occur on the WebSocket connection. If an error occurs, the WebSocket connection is closed, which will trigger the `close` event listener to handle reconnection if necessary.
@@ -243,6 +255,8 @@ if (message.type === "category.updated") {
             return;
           }
 
+          setStatus("disconnected");
+
           const attempt =
             reconnectAttemptRef.current;
 
@@ -255,6 +269,8 @@ if (message.type === "category.updated") {
             10000,
           );
 
+          setStatus("reconnecting");
+
           reconnectTimerRef.current =
             setTimeout(
               connect,
@@ -266,6 +282,10 @@ if (message.type === "category.updated") {
       socket.addEventListener(
         "error",
         () => {
+
+          console.error(
+      "Realtime WebSocket error",
+          );
           socket.close();
         },
       );
@@ -297,4 +317,7 @@ if (message.type === "category.updated") {
   onCategoryDeleted,
   onCategoryUpdated,
 ]);
+  return {
+    status,
+  };
 }

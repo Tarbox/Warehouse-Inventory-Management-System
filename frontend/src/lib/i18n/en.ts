@@ -133,4 +133,12 @@ dashboard: {
   noCategories: "No categories available",
 },
 
+realtime: {
+  connected: "Realtime connected",
+  disconnected:
+    "Realtime connection lost. Updates may be delayed.",
+  reconnecting:
+    "Reconnecting to realtime...",
+},
+
 } as const;
