@@ -11,6 +11,10 @@ import {
   type HistoryItem,
 } from "../../../lib/api";
 
+import {
+  getUserFriendlyErrorMessage,
+} from "../../../lib/apiError";
+
 import { useRouter } from "next/navigation";
 
 export default function AdminHistoryPage() {
@@ -49,9 +53,7 @@ export default function AdminHistoryPage() {
           return;
         }
 
-        setError(
-          "Failed to load history",
-        );
+        setError(getUserFriendlyErrorMessage(error));
       } finally {
         setLoading(false);
       }

@@ -13,6 +13,8 @@ import { useLocale } from "../../lib/i18n/LocaleProvider";
 
 import LanguageSwitcher from "../../lib/i18n/LanguageSwitcher";
 
+import { getApiErrorKey } from "../../lib/apiError";
+
 export default function LoginPage() {
   const router = useRouter();
   const { t } = useLocale();
@@ -43,17 +45,16 @@ export default function LoginPage() {
       router.replace("/dashboard");
       router.refresh();
     } catch (error) {
-      if (error instanceof ApiError) {
-        setError(
-          error.message ||
-            t.login.invalidCredentials,
-        );
-      } else {
-        setError(
-          t.login.connectionError,
-        );
-      }
-    } finally {
+  if (error instanceof ApiError) {
+    setError(
+      t.apiErrors[getApiErrorKey(error)],
+    );
+  } else {
+    setError(
+      t.login.connectionError,
+    );
+  }
+} finally {
       setLoading(false);
     }
   }

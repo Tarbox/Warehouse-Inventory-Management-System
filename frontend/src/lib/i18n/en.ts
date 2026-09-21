@@ -24,6 +24,27 @@ export const en = {
     clear: "clear",
   },
 
+  apiErrors: {
+  unauthenticated:
+    "Your session has expired. Please log in again.",
+  invalidCredentials:
+    "Invalid username or password",
+  forbidden:
+    "You do not have permission to perform this action.",
+  notFound:
+    "The requested resource was not found.",
+  insufficientStock:
+    "There is not enough stock for this operation.",
+  versionConflict:
+    "This item was changed by another user. Please refresh and try again.",
+  validation:
+    "Please check the entered data.",
+  inventoryNotFound:
+    "The inventory item was not found.",
+  unknown:
+    "Something went wrong. Please try again.",
+},
+
   login: {
   title: "Warehouse Inventory",
   subtitle: "Sign in to continue",
@@ -110,5 +131,6 @@ dashboard: {
   viewCategories: "View categories",
   viewLowStock: "View low stock",
   noCategories: "No categories available",
-}
+},
+
 } as const;

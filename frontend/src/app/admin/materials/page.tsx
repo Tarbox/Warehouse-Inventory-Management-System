@@ -14,6 +14,10 @@ import {
 } from "../../../lib/api";
 
 import {
+  getUserFriendlyErrorMessage,
+} from "../../../lib/apiError";
+
+import {
   useInventoryRealtime,
 } from "../../../hooks/useInventoryRealtime";
 
@@ -67,9 +71,7 @@ export default function AdminMaterialsPage() {
         return;
       }
 
-      setError(
-        "Failed to load materials",
-      );
+      setError(getUserFriendlyErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -135,16 +137,8 @@ useInventoryRealtime({
 
       await loadMaterials();
     } catch (error) {
-      if (
-        error instanceof ApiError
-      ) {
-        setError(error.message);
-      } else {
-        setError(
-          "Failed to disable material",
-        );
-      }
-    } finally {
+  setError(getUserFriendlyErrorMessage(error));
+} finally {
       setDeletingId(null);
     }
   }

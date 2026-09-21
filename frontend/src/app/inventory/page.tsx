@@ -16,6 +16,10 @@ import {
 import { useLocale } from "../../lib/i18n/LocaleProvider";
 
 import {
+  getUserFriendlyErrorMessage,
+} from "../../lib/apiError";
+
+import {
   ApiError,
   decrementInventory,
   getCategories,
@@ -120,15 +124,18 @@ function InventoryContent() {
         setUser(userResponse.user);
         setItems(inventoryResponse.items);
       } catch (error) {
-        if (
-          error instanceof ApiError &&
-          error.status === 401
-        ) {
-          router.replace("/login");
-          return;
-        }
+          if (
+            error instanceof ApiError &&
+            error.status === 401
+          ) {
+            router.replace("/login");
+            return;
+          }
 
-        setError("Failed to load inventory");
+          setError(
+            getUserFriendlyErrorMessage(error),
+          );
+
       } finally {
         setLoading(false);
       }
@@ -287,7 +294,7 @@ const activeCategory = categoryId
         error.code === "VERSION_CONFLICT"
       ) {
         setError(
-          t.inventory.versionConflict,
+          getUserFriendlyErrorMessage(error),
         );
 
         await load();
@@ -296,10 +303,10 @@ const activeCategory = categoryId
       }
 
       if (error instanceof ApiError) {
-        setError(error.message);
+        getUserFriendlyErrorMessage(error);
       } else {
         setError(
-          t.inventory.setQuantityError,
+          getUserFriendlyErrorMessage(error),
         );
       }
     } finally {
@@ -365,13 +372,9 @@ const activeCategory = categoryId
         return;
       }
 
-      if (error instanceof ApiError) {
-        setError(error.message);
-      } else {
-        setError(
-          t.inventory.quantityValidation,
-        );
-      }
+          setError(
+      getUserFriendlyErrorMessage(error),
+    );
     } finally {
       setUpdatingId(null);
     }

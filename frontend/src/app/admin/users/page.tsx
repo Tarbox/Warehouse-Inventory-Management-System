@@ -17,6 +17,10 @@ import {
   type AdminUser,
 } from "../../../lib/api";
 
+import {
+  getUserFriendlyErrorMessage,
+} from "../../../lib/apiError";
+
 import { useRouter } from "next/navigation";
 
 // The AdminUsersPage component is responsible for managing users in the admin panel.
@@ -74,9 +78,7 @@ export default function AdminUsersPage() {
         return;
       }
 
-      setError(
-        "Failed to load users",
-      );
+      setError(getUserFriendlyErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -103,16 +105,8 @@ export default function AdminUsersPage() {
 
       await loadUsers();
     } catch (error) {
-      if (
-        error instanceof ApiError
-      ) {
-        setError(error.message);
-      } else {
-        setError(
-          "Failed to create user",
-        );
-      }
-    }
+  setError(getUserFriendlyErrorMessage(error));
+}
   }
 
 // The handleDisable function disables a user by calling the disableUser API function.
@@ -139,7 +133,7 @@ export default function AdminUsersPage() {
       if (
         error instanceof ApiError
       ) {
-        setError(error.message);
+        setError(getUserFriendlyErrorMessage(error));
       }
     }
   }
@@ -166,11 +160,9 @@ export default function AdminUsersPage() {
     if (
       error instanceof ApiError
     ) {
-      setError(error.message);
+      setError(getUserFriendlyErrorMessage(error));
     } else {
-      setError(
-        "Failed to enable user",
-      );
+      setError(getUserFriendlyErrorMessage(error));
     }
   }
 }
@@ -198,7 +190,7 @@ export default function AdminUsersPage() {
       if (
         error instanceof ApiError
       ) {
-        setError(error.message);
+        setError(getUserFriendlyErrorMessage(error));
       }
     }
   }
@@ -220,7 +212,7 @@ export default function AdminUsersPage() {
       if (
         error instanceof ApiError
       ) {
-        setError(error.message);
+        setError(getUserFriendlyErrorMessage(error));
       }
     }
   }
@@ -252,7 +244,7 @@ export default function AdminUsersPage() {
       if (
         error instanceof ApiError
       ) {
-        setError(error.message);
+        setError(getUserFriendlyErrorMessage(error));
       }
     }
   }

@@ -27,6 +27,10 @@ import {
   type User,
 } from "../../lib/api";
 
+import {
+  getUserFriendlyErrorMessage,
+} from "../../lib/apiError";
+
 export default function DashboardPage() {
   const router = useRouter();
   const { t } = useLocale();
@@ -123,11 +127,7 @@ export default function DashboardPage() {
           return;
         }
 
-        setError(
-          error instanceof ApiError
-            ? error.message
-            : "Failed to load dashboard",
-        );
+        setError(getUserFriendlyErrorMessage(error));
       } finally {
         setLoading(false);
       }

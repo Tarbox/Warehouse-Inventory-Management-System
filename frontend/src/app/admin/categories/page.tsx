@@ -15,6 +15,10 @@ import {
   type Category,
 } from "../../../lib/api";
 
+import {
+  getUserFriendlyErrorMessage,
+} from "../../../lib/apiError";
+
 import { useRouter } from "next/navigation";
 import { useLocale } from "../../../lib/i18n/LocaleProvider";
 import {
@@ -80,9 +84,7 @@ export default function AdminCategoriesPage() {
         return;
       }
 
-      setError(
-        "Failed to load categories",
-      );
+      setError(getUserFriendlyErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -189,17 +191,7 @@ useInventoryRealtime({
 
       await loadCategories();
     } catch (error) {
-      if (
-        error instanceof ApiError
-      ) {
-        setError(error.message);
-      } else {
-        setError(
-          editingCategory
-            ? t.categories.updateError
-            : t.categories.createError,
-        );
-      }
+      setError(getUserFriendlyErrorMessage(error));
     } finally {
       setSaving(false);
     }
@@ -227,15 +219,7 @@ useInventoryRealtime({
 
       await loadCategories();
     } catch (error) {
-      if (
-        error instanceof ApiError
-      ) {
-        setError(error.message);
-      } else {
-        setError(
-          t.categories.deleteError
-        );
-      }
+      setError(getUserFriendlyErrorMessage(error));
     } finally {
       setDeletingId(null);
     }

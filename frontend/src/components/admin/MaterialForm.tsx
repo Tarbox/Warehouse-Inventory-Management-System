@@ -15,6 +15,10 @@ import {
   type InventoryItem,
 } from "../../lib/api";
 
+import {
+  getUserFriendlyErrorMessage,
+} from "../../lib/apiError";
+
 type MaterialFormProps = {
   material?: InventoryItem | null;
   onSaved: () => void;
@@ -98,11 +102,9 @@ export function MaterialForm({
               "",
           );
         }
-      } catch {
-        setError(
-          "Failed to load categories",
-        );
-      } finally {
+      } catch (error) {
+  setError(getUserFriendlyErrorMessage(error));
+} finally {
         setLoadingCategories(false);
       }
     }
@@ -153,16 +155,8 @@ export function MaterialForm({
 
       onSaved();
     } catch (error) {
-      if (
-        error instanceof ApiError
-      ) {
-        setError(error.message);
-      } else {
-        setError(
-          "Failed to save material",
-        );
-      }
-    } finally {
+  setError(getUserFriendlyErrorMessage(error));
+} finally {
       setLoading(false);
     }
   }

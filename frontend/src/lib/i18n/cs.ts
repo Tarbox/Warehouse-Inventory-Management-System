@@ -24,6 +24,27 @@ export const cs = {
     clear: "vymazat"
   },
 
+  apiErrors: {
+  unauthenticated:
+    "Vaše relace vypršela. Přihlaste se prosím znovu.",
+  invalidCredentials:
+    "Neplatné uživatelské jméno nebo heslo",
+  forbidden:
+    "Nemáte oprávnění k provedení této akce.",
+  notFound:
+    "Požadovaný zdroj nebyl nalezen.",
+  insufficientStock:
+    "Pro tuto operaci není dostatek zásob.",
+  versionConflict:
+    "Tato položka byla změněna jiným uživatelem. Obnovte stránku a zkuste to znovu.",
+  validation:
+    "Zkontrolujte prosím zadané údaje.",
+  inventoryNotFound:
+    "Inventární položka nebyla nalezena.",
+  unknown:
+    "Došlo k neočekávané chybě. Zkuste to prosím znovu.",
+},
+
   login: {
   title: "Warehouse Inventory",
   subtitle: "Přihlaste se a pokračujte",

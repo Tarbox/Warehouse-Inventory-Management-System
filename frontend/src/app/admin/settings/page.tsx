@@ -12,6 +12,10 @@ import {
   type SystemSetting,
 } from "../../../lib/api";
 
+import {
+  getUserFriendlyErrorMessage,
+} from "../../../lib/apiError";
+
 // Import the useRouter hook from Next.js for navigation.
 import { useRouter } from "next/navigation";
 
@@ -63,9 +67,7 @@ export default function AdminSettingsPage() {
         return;
       }
 
-      setError(
-        "Failed to load settings",
-      );
+      setError(getUserFriendlyErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -106,16 +108,8 @@ export default function AdminSettingsPage() {
         "Setting saved successfully",
       );
     } catch (error) {
-      if (
-        error instanceof ApiError
-      ) {
-        setError(error.message);
-      } else {
-        setError(
-          "Failed to update setting",
-        );
-      }
-    } finally {
+  setError(getUserFriendlyErrorMessage(error));
+} finally {
       setSaving(null);
     }
   }
