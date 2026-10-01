@@ -13,5 +13,7 @@ export default defineConfig({
       "node_modules",
       "dist",
     ],
+
+    fileParallelism: false,
   },
 });

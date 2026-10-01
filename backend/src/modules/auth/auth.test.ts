@@ -11,7 +11,45 @@ import { SESSION_COOKIE_NAME } from "./auth.constants.js";
 
 import { buildApp } from "../../app.js";
 import { prisma } from "../../lib/prisma.js";
+import { generateSessionId } from "./session.js";
 
+async function createAuthenticatedUser(
+  roleName: "WORKER" | "ADMIN",
+) {
+  const role = await prisma.role.create({
+    data: {
+      name: roleName,
+      description: `Role used by ${roleName} authorization tests`,
+    },
+  });
+
+  const user = await prisma.user.create({
+    data: {
+      username: `${roleName.toLowerCase()}-authz-user`,
+      passwordHash: "test-hash",
+      isActive: true,
+      roleId: role.id,
+    },
+  });
+
+  const sessionId = generateSessionId();
+
+  await prisma.session.create({
+    data: {
+      id: sessionId,
+      userId: user.id,
+      expiresAt: new Date(
+        Date.now() + 60 * 60 * 1000,
+      ),
+    },
+  });
+
+  return {
+    user,
+    sessionId,
+    cookie: `${SESSION_COOKIE_NAME}=${sessionId}`,
+  };
+}
 describe("Authentication", () => {
   let app: Awaited<
     ReturnType<typeof buildApp>
@@ -631,6 +669,121 @@ it("should apply dynamic session duration", async () => {
       });
     }
   }
+});
+
+it("should return 401 for unauthenticated requests", async () => {
+  const response = await app.inject({
+    method: "GET",
+    url: "/api/inventory",
+  });
+
+  expect(response.statusCode).toBe(401);
+
+  expect(response.json()).toMatchObject({
+    error: "UNAUTHENTICATED",
+    message: "Authentication required",
+  });
+});
+
+it("should allow WORKER to read inventory", async () => {
+  const { cookie } =
+    await createAuthenticatedUser("WORKER");
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/api/inventory",
+    headers: {
+      cookie,
+    },
+  });
+
+  expect(response.statusCode).toBe(200);
+});
+
+it("should allow WORKER to use inventory update operations", async () => {
+  const { cookie } =
+    await createAuthenticatedUser("WORKER");
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/api/inventory/999999/increment",
+    headers: {
+      cookie,
+    },
+    payload: {
+      amount: 1,
+    },
+  });
+
+  expect(response.statusCode).toBe(404);
+});
+
+it("should return 403 for WORKER on users endpoint", async () => {
+  const { cookie } =
+    await createAuthenticatedUser("WORKER");
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/api/users",
+    headers: {
+      cookie,
+    },
+  });
+
+  expect(response.statusCode).toBe(403);
+
+  expect(response.json()).toMatchObject({
+    error: "FORBIDDEN",
+  });
+});
+
+it("should return 403 for WORKER on settings endpoint", async () => {
+  const { cookie } =
+    await createAuthenticatedUser("WORKER");
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/api/settings",
+    headers: {
+      cookie,
+    },
+  });
+
+  expect(response.statusCode).toBe(403);
+
+  expect(response.json()).toMatchObject({
+    error: "FORBIDDEN",
+  });
+});
+
+it("should allow ADMIN to access users endpoint", async () => {
+  const { cookie } =
+    await createAuthenticatedUser("ADMIN");
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/api/users",
+    headers: {
+      cookie,
+    },
+  });
+
+  expect(response.statusCode).toBe(200);
+});
+
+it("should allow ADMIN to access settings endpoint", async () => {
+  const { cookie } =
+    await createAuthenticatedUser("ADMIN");
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/api/settings",
+    headers: {
+      cookie,
+    },
+  });
+
+  expect(response.statusCode).toBe(200);
 });
 });
 
