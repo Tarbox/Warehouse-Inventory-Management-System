@@ -97,13 +97,14 @@ describe("Materials API", () => {
   });
 
   beforeEach(async () => {
-    await prisma.session.deleteMany();
-    await prisma.inventory.deleteMany();
-    await prisma.material.deleteMany();
-    await prisma.category.deleteMany();
-    await prisma.user.deleteMany();
-    await prisma.role.deleteMany();
-  });
+  await prisma.inventoryChange.deleteMany();
+  await prisma.session.deleteMany();
+  await prisma.inventory.deleteMany();
+  await prisma.material.deleteMany();
+  await prisma.category.deleteMany();
+  await prisma.user.deleteMany();
+  await prisma.role.deleteMany();
+});
 
   it("should return active materials with pagination", async () => {
   const { cookie } =
