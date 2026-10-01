@@ -91,7 +91,7 @@ cp .env.example .env
 
 Change the demo passwords before seeding the database.
 
-### 3. Start the containers
+### 3. Start the development stack
 
 ```bash
 docker compose up -d --build
@@ -115,7 +115,9 @@ docker compose exec backend npx prisma db seed
 http://localhost:8080
 ```
 
-The Compose stack keeps PostgreSQL bound to localhost on port `5433`.
+Development Nginx uses plain HTTP and Next.js HMR. PostgreSQL is bound to localhost on port `5433`.
+
+The production Nginx configuration is separate and is used with `docker-compose.prod.yml`.
 
 ## Environment
 
@@ -127,10 +129,25 @@ See [docs/environment.md](docs/environment.md).
 
 ## Testing
 
-Backend tests use an isolated PostgreSQL database.
+Backend tests use a dedicated PostgreSQL test database.
+
+Start the test database:
+
+```bash
+docker compose -f docker-compose.test.yml up -d
+```
+
+Create the test environment file:
+
+```bash
+cp backend/.env.test.example backend/.env.test
+```
+
+Apply migrations and run the backend suite:
 
 ```bash
 cd backend
+npx prisma migrate deploy
 npm test
 ```
 
@@ -139,8 +156,10 @@ Frontend checks:
 ```bash
 cd frontend
 npm run lint
-npx tsc --noEmit
+npm run typecheck
 ```
+
+The same checks run automatically in GitHub Actions.
 
 ## API
 
@@ -169,7 +188,19 @@ Passwords are supplied only through environment variables. Never use demo passwo
 
 ## Deployment
 
-The repository contains a development-oriented Docker Compose stack. Production deployments should provide:
+Development and production are intentionally separated.
+
+For a production Compose deployment:
+
+```bash
+cp .env.example .env
+docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml exec backend npx prisma migrate deploy
+```
+
+Provide TLS certificates as `nginx/certs/fullchain.pem` and `nginx/certs/privkey.pem` before starting the production stack.
+
+Production deployments should additionally provide:
 
 - trusted TLS certificates
 - production secrets through environment/secret management
