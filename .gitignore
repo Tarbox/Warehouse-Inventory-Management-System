@@ -31,8 +31,15 @@ Thumbs.db
 # Test / coverage
 coverage/
 
-# SSL/TLS certificate
+# SSL/TLS certificates
 nginx/certs/
 
 # Database backups
 backups/
+
+# Local agent/editor files
+.agents/
+.claude/
+.windsurf/
+**/CLAUDE.md
+**/AGENTS.md
