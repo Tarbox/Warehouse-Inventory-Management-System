@@ -79,13 +79,27 @@ jobs:
 
       - name: Validate development Nginx
         run: |
-          docker run --rm             -v "$PWD/nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro"             nginx:alpine nginx -t
+          docker run --rm \
+            --add-host frontend:127.0.0.1 \
+            --add-host backend:127.0.0.1 \
+            -v "$PWD/nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro" \
+            nginx:alpine nginx -t
 
       - name: Validate production Nginx
         run: |
           mkdir -p nginx/certs
-          openssl req -x509 -nodes -newkey rsa:2048             -keyout nginx/certs/privkey.pem             -out nginx/certs/fullchain.pem             -days 1             -subj "/CN=localhost"
-          docker run --rm             -v "$PWD/nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro"             -v "$PWD/nginx/certs:/etc/nginx/certs:ro"             nginx:alpine nginx -t
+          openssl req -x509 -nodes -newkey rsa:2048 \
+            -keyout nginx/certs/privkey.pem \
+            -out nginx/certs/fullchain.pem \
+            -days 1 \
+            -subj "/CN=localhost"
+
+          docker run --rm \
+            --add-host frontend:127.0.0.1 \
+            --add-host backend:127.0.0.1 \
+            -v "$PWD/nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro" \
+            -v "$PWD/nginx/certs:/etc/nginx/certs:ro" \
+            nginx:alpine nginx -t
 
       - name: Build backend image
         run: docker build -t warehouse-inventory-backend:ci ./backend
