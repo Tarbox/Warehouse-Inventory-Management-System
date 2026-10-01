@@ -19,9 +19,11 @@ Install `git-filter-repo` and remove local-only artifacts:
 git filter-repo --path backend/cookies.txt   --path backend/.agents   --path backend/.claude   --path backend/.windsurf   --path backend/skills-lock.json   --path frontend/AGENTS.md   --path frontend/CLAUDE.md   --invert-paths
 ```
 
-Inspect the rewritten history, then force-update the remote:
+Inspect the rewritten history. `git-filter-repo` may remove the `origin` remote as a safety measure, so restore it before pushing:
 
 ```bash
+git remote -v
+git remote add origin git@github.com:Tarbox/warehouse-inventory.git
 git push --force --mirror origin
 ```
 
