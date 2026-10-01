@@ -1,73 +1,9 @@
 import "dotenv/config";
-import cookie from "@fastify/cookie";
-import Fastify from "fastify";
-import cors from "@fastify/cors";
-import websocket from "@fastify/websocket";
-import rateLimit from "@fastify/rate-limit";
-import originCheck from "./plugins/origin-check.js";
 
+import { buildApp } from "./app.js";
 import { prisma } from "./lib/prisma.js";
-import { registerRoutes } from "./routes/index.js";
 
-const app = Fastify({
-  logger: true,
-});
-app.setErrorHandler((error, request, reply) => {
-  request.log.error(error);
-
-  const err = error as Error & { statusCode?: number };
-
-  if (err.statusCode && err.statusCode < 500) {
-    return reply.status(err.statusCode).send({
-      error: "REQUEST_ERROR",
-      message: err.message,
-    });
-  }
-
-  return reply.status(500).send({
-    error: "INTERNAL_SERVER_ERROR",
-    message: "Internal server error",
-  });
-});
-await app.register(cookie);
-await app.register(websocket);
-await app.register(rateLimit);
-await app.register(originCheck);
-const corsOrigin = (
-  process.env.CORS_ORIGIN ??
-  "http://localhost:3000"
-)
-  .split(",")
-  .map((origin) => origin.trim());
-await app.register(cors, {
-  origin: corsOrigin,
-  credentials: true,
-  methods: [
-    "GET",
-    "POST",
-    "PATCH",
-    "DELETE",
-    "OPTIONS",
-  ],
-});
-
-app.get("/health", async () => {
-  return {
-    status: "ok",
-    service: "backend",
-  };
-});
-
-app.get("/health/db", async () => {
-  await prisma.$queryRaw`SELECT 1`;
-
-  return {
-    status: "ok",
-    database: "connected",
-  };
-});
-
-await registerRoutes(app);
+const app = await buildApp();
 
 const start = async () => {
   try {

@@ -14,11 +14,14 @@ export async function authRoutes(
   "/auth/login",
   {
     config: {
-      rateLimit: {
-        max: 5,
-        timeWindow: "1 minute",
-      },
-    },
+  rateLimit:
+    process.env.NODE_ENV === "test"
+      ? false
+      : {
+          max: 5,
+          timeWindow: "1 minute",
+        },
+},
   },
   loginController,
 );
