@@ -7,18 +7,24 @@ BACKEND_DIR="$PROJECT_ROOT/backend"
 
 cd "$PROJECT_ROOT"
 
-echo "Starting PostgreSQL..."
-docker compose up -d postgres
+echo "Starting the dedicated test PostgreSQL service..."
+docker compose -f docker-compose.test.yml up -d
 
 cd "$BACKEND_DIR"
+
+if [[ ! -f .env.test ]]; then
+  echo "backend/.env.test is missing."
+  echo "Create it with: cp backend/.env.test.example backend/.env.test"
+  exit 1
+fi
 
 echo "Loading test environment..."
 set -a
 source .env.test
 set +a
 
-echo "Checking test database connection..."
-npx prisma db execute --stdin <<< "SELECT 1;"
+echo "Applying database migrations..."
+npx prisma migrate deploy
 
-echo "Running authentication tests..."
+echo "Running backend tests..."
 npm test
