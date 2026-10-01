@@ -260,8 +260,8 @@ export async function setInventory(
         };
       }
       // Update the inventory record with the new quantity and increment the version number to indicate a change.
-      const updated =
-        await tx.inventory.update({
+      const updateResult =
+        await tx.inventory.updateMany({
           where: {
             id: inventory.id,
             version: input.expectedVersion,
@@ -275,6 +275,16 @@ export async function setInventory(
             },
           },
         });
+
+      if (updateResult.count !== 1) {
+        throw new Error("VERSION_CONFLICT");
+      }
+
+      const updated = {
+        ...inventory,
+        quantity: input.quantity,
+        version: input.expectedVersion + 1,
+      };
       // Create a new inventory change record to log the adjustment made to the inventory, including the user who made the change and the operation performed.
       await tx.inventoryChange.create({
         data: {
