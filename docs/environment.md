@@ -1,25 +1,32 @@
 # Environment Configuration
 
-## Root Compose variables
+## Docker Compose
 
-The root `.env.example` documents variables consumed by `docker-compose.yml`:
+The root `.env.example` documents the variables consumed by the Compose files:
 
 - `POSTGRES_DB`
 - `POSTGRES_USER`
 - `POSTGRES_PASSWORD`
-- `DATABASE_URL`
 - `CORS_ORIGIN`
 - `SEED_ADMIN_PASSWORD`
 - `SEED_WORKER_PASSWORD`
 
-Do not commit a real `.env` file.
+Create it locally with:
 
-## Development
+```bash
+cp .env.example .env
+```
 
-For the Docker Compose stack, PostgreSQL is published on localhost port `5433`. The backend container uses the internal hostname `postgres:5432`.
+Do not commit the resulting `.env` file.
 
-For direct host-side backend commands, use `backend/.env.example`, which points to `localhost:5433`.
+## Backend commands from the host
+
+Use `backend/.env.example` for Prisma or Node commands executed directly on the host. The development Compose PostgreSQL service is published on `localhost:5433`.
+
+For a separate local test database, use `backend/.env.test.example` and the test Compose file, which publishes PostgreSQL test on `localhost:5434`.
 
 ## Production
 
 Provide production values through the deployment environment or a secret manager. Do not reuse demo seed passwords in production.
+
+The production Compose file does not publish PostgreSQL outside the Compose network.
