@@ -771,6 +771,73 @@ it("should allow ADMIN to access users endpoint", async () => {
   expect(response.statusCode).toBe(200);
 });
 
+it("should allow WORKER to read categories", async () => {
+  const { cookie } = await createAuthenticatedUser("WORKER");
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/api/categories",
+    headers: { cookie },
+  });
+
+  expect(response.statusCode).toBe(200);
+});
+
+it("should return 403 for WORKER on category management", async () => {
+  const { cookie } = await createAuthenticatedUser("WORKER");
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/api/categories",
+    headers: { cookie },
+    payload: {
+      name: "Forbidden Worker Category",
+    },
+  });
+
+  expect(response.statusCode).toBe(403);
+  expect(response.json()).toMatchObject({ error: "FORBIDDEN" });
+});
+
+it("should return 403 for WORKER on history endpoint", async () => {
+  const { cookie } = await createAuthenticatedUser("WORKER");
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/api/history",
+    headers: { cookie },
+  });
+
+  expect(response.statusCode).toBe(403);
+  expect(response.json()).toMatchObject({ error: "FORBIDDEN" });
+});
+
+it("should allow ADMIN to access history endpoint", async () => {
+  const { cookie } = await createAuthenticatedUser("ADMIN");
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/api/history",
+    headers: { cookie },
+  });
+
+  expect(response.statusCode).toBe(200);
+});
+
+it("should return 403 for WORKER on settings update", async () => {
+  const { cookie } = await createAuthenticatedUser("WORKER");
+
+  const response = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/session_duration_hours",
+    headers: { cookie },
+    payload: { value: "4" },
+  });
+
+  expect(response.statusCode).toBe(403);
+  expect(response.json()).toMatchObject({ error: "FORBIDDEN" });
+});
+
 it("should allow ADMIN to access settings endpoint", async () => {
   const { cookie } =
     await createAuthenticatedUser("ADMIN");
