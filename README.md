@@ -7,6 +7,12 @@ A full-stack warehouse inventory management system for tracking consumable mater
 
 Built as a portfolio-quality systems project, it demonstrates authentication, role-based authorization, transactional inventory updates, concurrency control, audit history, realtime events, Docker, PostgreSQL, Prisma, and Nginx.
 
+## Project Preview
+
+![Warehouse Inventory project preview](docs/hero.svg)
+
+_Illustrative preview of the product and its technical focus._
+
 ## Overview
 
 Warehouse Inventory is designed around a simple operational workflow:
