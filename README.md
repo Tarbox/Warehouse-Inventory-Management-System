@@ -9,7 +9,7 @@ Built as a portfolio-quality systems project, it demonstrates authentication, ro
 
 ## Project Preview
 
-![Warehouse Inventory project preview](docs/hero.svg)
+![Warehouse Inventory project preview](docs/Hero.png)
 
 _Illustrative preview of the product and its technical focus._
 
