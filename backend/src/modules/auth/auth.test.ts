@@ -66,7 +66,11 @@ describe("Authentication", () => {
   });
 
   beforeEach(async () => {
+  await prisma.inventoryChange.deleteMany();
   await prisma.session.deleteMany();
+  await prisma.inventory.deleteMany();
+  await prisma.material.deleteMany();
+  await prisma.category.deleteMany();
   await prisma.user.deleteMany();
   await prisma.role.deleteMany();
 });
