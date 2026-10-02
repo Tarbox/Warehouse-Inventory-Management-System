@@ -1,54 +1,104 @@
 # Warehouse Inventory
 
-A full-stack warehouse inventory management application for tracking consumable materials, stock levels, users, and inventory changes.
+[![CI](https://github.com/Tarbox/warehouse-inventory/actions/workflows/ci.yml/badge.svg)](https://github.com/Tarbox/warehouse-inventory/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-The project is designed as a portfolio-quality systems-oriented application demonstrating authentication, role-based authorization, transactional inventory updates, concurrency control, audit history, realtime events, Docker, PostgreSQL, Prisma, and Nginx.
+A full-stack warehouse inventory management system for tracking consumable materials, stock levels, users, and inventory changes.
+
+Built as a portfolio-quality systems project, it demonstrates authentication, role-based authorization, transactional inventory updates, concurrency control, audit history, realtime events, Docker, PostgreSQL, Prisma, and Nginx.
+
+## Overview
+
+Warehouse Inventory is designed around a simple operational workflow:
+
+**Dashboard → Category → Inventory → Stock operation → Audit history**
+
+The application supports both everyday warehouse workflows and administrative operations such as user, category, material, and system-settings management.
 
 ## Features
 
+### Inventory
+
 - Inventory browsing, filtering, sorting, and low-stock detection
-- Increment/decrement inventory operations
+- Increment/decrement stock operations
 - Exact quantity updates with optimistic version checks
-- PostgreSQL row locking for concurrent increment/decrement operations
-- Server-side sessions with HttpOnly cookies
+- Concurrent update protection using PostgreSQL row locking
+- Inventory change history and audit records
+
+### Authentication & authorization
+
+- Server-side sessions stored in PostgreSQL
+- HttpOnly session cookies
 - Argon2id password hashing
 - Role- and permission-based authorization
-- User, category, material, settings, and history administration
-- WebSocket realtime updates
-- Docker Compose development stack
-- Separate development and production Nginx configurations
-- Automated backend API tests
-- CI checks for backend, frontend, Docker images, Compose, and Nginx configuration
+- Session expiration
+- Disabled-user handling
+- Login rate limiting
+- Origin validation for state-changing requests
+
+### Realtime
+
+- WebSocket-based realtime updates
+- Typed inventory/material/category events
+- Client-side protection against stale inventory events
+
+### Administration
+
+- User management
+- Category CRUD
+- Material CRUD
+- System settings
+- Inventory history
+
+### Infrastructure
+
+- Dockerized frontend, backend, and PostgreSQL
+- Docker Compose development and test environments
+- Separate production Compose configuration
+- Nginx reverse proxy
+- Development HMR and WebSocket proxying
+- CI validation for application and infrastructure configuration
 
 ## Architecture
 
 ```text
-Browser
-   |
-   v
- Nginx
-   |-------------------|
-   v                   v
-Next.js             Fastify
-Frontend             Backend
-                       |
-                       v
-                  PostgreSQL
-                       ^
-                       |
-                    Prisma
+                         Browser
+                            |
+                         HTTP/HTTPS
+                            |
+                            v
+                     +-------------+
+                     |    Nginx    |
+                     +-------------+
+                       |         |
+                HTTP   |         |  /api/*
+                       v         v
+                +---------+   +---------+
+                | Next.js |   | Fastify |
+                | Frontend|   | Backend |
+                +---------+   +---------+
+                                  |
+                                  v
+                           +--------------+
+                           |  PostgreSQL  |
+                           +--------------+
+                                  |
+                               Prisma
 ```
+
+Realtime updates use WebSocket connections between the browser and backend.
 
 See [docs/architecture.md](docs/architecture.md).
 
 ## Tech Stack
 
-| Layer | Technology |
+| Area | Technology |
 | --- | --- |
-| Frontend | Next.js, React, TypeScript, Tailwind CSS |
+| Frontend | Next.js 16, React 19, TypeScript, Tailwind CSS |
 | Backend | Node.js, Fastify, TypeScript, Zod |
-| Authentication | Argon2id, server-side sessions, HttpOnly cookies |
-| Database | PostgreSQL, Prisma |
+| Database | PostgreSQL 18 |
+| ORM | Prisma 7 |
+| Authentication | Argon2id + server-side sessions |
 | Realtime | WebSocket |
 | Infrastructure | Docker, Docker Compose, Nginx |
 | Testing | Vitest |
@@ -60,11 +110,17 @@ See [docs/architecture.md](docs/architecture.md).
 warehouse-inventory/
 ├── backend/
 │   ├── prisma/
+│   │   ├── migrations/
+│   │   └── seed.ts
 │   └── src/
 ├── frontend/
+│   ├── public/
+│   └── src/
 ├── nginx/
 ├── docs/
 ├── scripts/
+├── .github/
+│   └── workflows/
 ├── .env.example
 ├── docker-compose.yml
 ├── docker-compose.prod.yml
@@ -74,7 +130,7 @@ warehouse-inventory/
 
 # Quick Start
 
-The fastest way to run the project from a clean clone is the Docker-based development stack.
+The recommended way to run the project locally is the Docker-based development stack.
 
 ## Requirements
 
@@ -86,9 +142,9 @@ Install:
 - Node.js 24+
 - npm
 
-Node.js/npm are required for Prisma migrations and seeding from the host. Frontend and backend application dependencies are installed automatically inside the Docker build.
+The application services run in Docker. Node.js/npm are needed for Prisma migrations, seeding, and optional host-side development commands.
 
-## 1. Clone the repository
+## 1. Clone
 
 ```bash
 git clone https://github.com/Tarbox/warehouse-inventory.git
@@ -103,7 +159,7 @@ Create the Docker environment:
 cp .env.example .env
 ```
 
-Create the host environment used by Prisma:
+Create the backend host environment used by Prisma:
 
 ```bash
 cp backend/.env.example backend/.env
@@ -111,134 +167,95 @@ cp backend/.env.example backend/.env
 
 Use the same `SEED_ADMIN_PASSWORD` and `SEED_WORKER_PASSWORD` values in both files.
 
-Do not commit either `.env` file.
+Do not commit either file.
 
-## 3. Start PostgreSQL, backend, frontend, and Nginx
+## 3. Start the application stack
 
 ```bash
-docker compose up -d --build
+docker compose up -d --build --wait
 ```
 
-The development stack provides:
+This starts:
 
-- PostgreSQL on `localhost:5433`
-- Nginx on `localhost:8080`
-- Backend and frontend behind the Nginx reverse proxy
+- PostgreSQL
+- Fastify backend
+- Next.js frontend
+- Nginx reverse proxy
 
-## 4. Install backend tooling for Prisma
+The development stack exposes:
+
+| Service | Host |
+| --- | --- |
+| Application | http://localhost:8080 |
+| PostgreSQL | localhost:5433 |
+
+## 4. Install backend tooling
 
 ```bash
 cd backend
 npm ci
 npx prisma generate
-cd ..
 ```
 
 ## 5. Apply database migrations
 
 ```bash
-cd backend
 npx prisma migrate deploy
-cd ..
 ```
 
 ## 6. Seed demo data
 
 ```bash
-cd backend
 npx prisma db seed
 cd ..
 ```
 
-The seed creates the local `admin` and `worker` demo accounts.
+The seed creates local `admin` and `worker` accounts.
 
 ## 7. Open the application
 
 Open:
 
-```text
-http://localhost:8080
-```
+**http://localhost:8080**
 
-The development Nginx configuration supports Next.js HMR and WebSocket realtime connections.
+The development Nginx configuration also proxies Next.js HMR and WebSocket traffic.
 
 ## Demo Accounts
 
 The seed creates:
 
-- `admin`
-- `worker`
+| User | Role | Password |
+| --- | --- | --- |
+| `admin` | ADMIN | value of `SEED_ADMIN_PASSWORD` |
+| `worker` | WORKER | value of `SEED_WORKER_PASSWORD` |
 
-Passwords are taken from `SEED_ADMIN_PASSWORD` and `SEED_WORKER_PASSWORD`.
-
-Change the example passwords before using the application outside a local development environment.
-
-# Host Development
-
-You can also run the frontend and backend directly with Node.js instead of using their Docker containers.
-
-## Backend
-
-```bash
-cd backend
-npm ci
-npx prisma generate
-npm run dev
-```
-
-The host backend uses the connection configured in `backend/.env`.
-
-## Frontend
-
-```bash
-cd frontend
-npm ci
-npm run dev
-```
-
-When running the frontend directly, configure the appropriate API URL for the environment.
+Use local/demo passwords only. Never reuse them in production.
 
 # Testing
 
 Backend tests use a dedicated PostgreSQL test database.
 
-## 1. Start the test database
+## Backend tests
 
 From the repository root:
 
 ```bash
-docker compose -f docker-compose.test.yml up -d
-```
+docker compose -f docker-compose.test.yml up -d --wait
 
-The test database is published on `localhost:5434`.
-
-## 2. Configure the test environment
-
-```bash
 cp backend/.env.test.example backend/.env.test
-```
 
-## 3. Install backend dependencies
-
-```bash
 cd backend
 npm ci
 npx prisma generate
-```
-
-## 4. Apply test migrations
-
-```bash
 npx prisma migrate deploy
-```
-
-## 5. Run the test suite
-
-```bash
 npm test
 ```
 
-Frontend checks:
+The test database is exposed on `localhost:5434`.
+
+The clean-clone test workflow has been verified with the repository's current setup, including the backend test suite.
+
+## Frontend checks
 
 ```bash
 cd frontend
@@ -248,68 +265,7 @@ npm run typecheck
 npm run build
 ```
 
-The same backend, frontend, Docker, Compose, and Nginx checks run automatically in GitHub Actions.
-
-# Environment
-
-Do not commit real secrets.
-
-The root `.env.example` contains variables used by Docker Compose:
-
-- `POSTGRES_DB`
-- `POSTGRES_USER`
-- `POSTGRES_PASSWORD`
-- `CORS_ORIGIN`
-- `SEED_ADMIN_PASSWORD`
-- `SEED_WORKER_PASSWORD`
-
-The `backend/.env.example` file is for Prisma/Node commands executed directly from the host.
-
-The `backend/.env.test.example` file is for the dedicated test database.
-
-See [docs/environment.md](docs/environment.md).
-
-# API
-
-See [docs/api.md](docs/api.md).
-
-# Security
-
-The application includes server-side sessions, Argon2id password hashing, HttpOnly cookies, SameSite protection, origin validation for mutating requests, login rate limiting, authorization middleware, session expiration, disabled-user handling, and Nginx security headers.
-
-See [SECURITY.md](SECURITY.md).
-
-# Concurrency
-
-Inventory changes are protected against lost updates:
-
-- increment/decrement operations lock the inventory row inside a database transaction
-- exact quantity updates require the expected inventory version
-- stale writes return `409 VERSION_CONFLICT`
-- inventory changes are recorded in the audit table
-
-# Deployment
-
-Development and production are intentionally separated.
-
-The production stack is defined in [docker-compose.prod.yml](docker-compose.prod.yml) and uses [nginx/nginx.prod.conf](nginx/nginx.prod.conf).
-
-Before starting a production deployment, provide:
-
-- production environment variables and secrets
-- trusted TLS certificates at `nginx/certs/fullchain.pem` and `nginx/certs/privkey.pem`
-- PostgreSQL backups
-- restricted network access
-- monitoring and log collection
-- an image update strategy
-
-Production PostgreSQL is not published outside the Compose network.
-
-Database migrations and seeding must be executed from an environment that has both Prisma CLI tooling and network access to the production PostgreSQL instance. Do not rely on the development host configuration for production database access.
-
-See [docs/environment.md](docs/environment.md) for environment details.
-
-# CI
+## CI
 
 GitHub Actions validates:
 
@@ -326,16 +282,142 @@ GitHub Actions validates:
 - development Nginx configuration
 - production Nginx configuration
 
-The CI workflow is defined in [.github/workflows/ci.yml](.github/workflows/ci.yml).
+See [.github/workflows/ci.yml](.github/workflows/ci.yml).
+
+# Environment
+
+Never commit real secrets.
+
+### Docker Compose
+
+The root `.env.example` defines:
+
+- `POSTGRES_DB`
+- `POSTGRES_USER`
+- `POSTGRES_PASSWORD`
+- `CORS_ORIGIN`
+- `SEED_ADMIN_PASSWORD`
+- `SEED_WORKER_PASSWORD`
+
+### Backend
+
+`backend/.env.example` is used for host-side Prisma/Node commands.
+
+`backend/.env.test.example` is used for the dedicated test database.
+
+See [docs/environment.md](docs/environment.md).
+
+# Security
+
+The application includes:
+
+- server-side sessions
+- Argon2id password hashing
+- HttpOnly cookies
+- SameSite protection
+- origin validation for mutating requests
+- login rate limiting
+- authorization middleware
+- session expiration
+- disabled-user handling
+- Nginx security headers
+
+See [SECURITY.md](SECURITY.md).
+
+## Reporting security issues
+
+Please follow the process described in [SECURITY.md](SECURITY.md).
+
+# Concurrency & Data Integrity
+
+Inventory updates are designed to prevent lost updates.
+
+- Increment/decrement operations lock the inventory row inside a database transaction.
+- Exact quantity updates require the expected inventory version.
+- Stale writes return `409 VERSION_CONFLICT`.
+- Inventory changes are recorded in the audit history.
+
+See [docs/architecture.md](docs/architecture.md).
+
+# Production Deployment
+
+Development and production are intentionally separated.
+
+The production stack is defined in [docker-compose.prod.yml](docker-compose.prod.yml) and uses [nginx/nginx.prod.conf](nginx/nginx.prod.conf).
+
+A production deployment requires:
+
+- production environment variables and secrets
+- trusted TLS certificates
+- PostgreSQL backups
+- restricted network access
+- monitoring and log collection
+- an image update strategy
+
+TLS certificates are mounted from:
+
+```text
+nginx/certs/fullchain.pem
+nginx/certs/privkey.pem
+```
+
+Production PostgreSQL is not published outside the Compose network.
+
+Database migrations and seeding must be run from an environment that has Prisma CLI tooling and network access to the production database.
+
+# Common Commands
+
+Start development:
+
+```bash
+docker compose up -d --build --wait
+```
+
+Stop development:
+
+```bash
+docker compose down
+```
+
+Stop development and remove local volumes:
+
+```bash
+docker compose down -v
+```
+
+View logs:
+
+```bash
+docker compose logs -f
+```
+
+Check service status:
+
+```bash
+docker compose ps
+```
+
+Start the test database:
+
+```bash
+docker compose -f docker-compose.test.yml up -d --wait
+```
+
+# Documentation
+
+| Document | Description |
+| --- | --- |
+| [Architecture](docs/architecture.md) | Application boundaries and system design |
+| [Environment](docs/environment.md) | Environment variables and configuration |
+| [API](docs/api.md) | API documentation |
+| [Security Policy](SECURITY.md) | Security reporting and policy |
 
 # Project Status
 
-The `v1.0.0` release marks the first documented release baseline. Future work may include material request workflows, QR-based workflows, richer reporting, OpenAPI documentation, and broader end-to-end coverage.
+The project is maintained as a documented portfolio/open-source baseline.
+
+The current release baseline is `v1.0.0`. Future work may include material request workflows, QR-based workflows, richer reporting, OpenAPI documentation, and broader end-to-end coverage.
 
 # License
 
 MIT License. See [LICENSE](LICENSE).
-
-# Security Policy
-
-See [SECURITY.md](SECURITY.md).
