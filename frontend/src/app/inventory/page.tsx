@@ -738,12 +738,14 @@ if (!confirmed) {
                       </td>
 
                       {/* Category */}
-                      <td className="px-4 py-3 text-slate-600">
-                        {
-                          item.category
-                            .name
-                        }
-                      </td>
+                      <td className="px-4 py-3">
+  <span
+    className="inline-flex max-w-full items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600"
+    title={item.category.name}
+  >
+    {item.category.name}
+  </span>
+</td>
 
                       {/* Quantity */}
                       <td className="px-4 py-3">
@@ -944,12 +946,14 @@ if (!confirmed) {
                         {item.name}
                       </h2>
 
-                      <p className="mt-1 text-sm text-slate-500">
-                        {
-                          item.category
-                            .name
-                        }
-                      </p>
+                      <div className="mt-2">
+  <span
+    className="inline-flex max-w-full items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600"
+    title={item.category.name}
+  >
+    {item.category.name}
+  </span>
+</div>
                     </div>
 
                     {item.lowStock ? (
