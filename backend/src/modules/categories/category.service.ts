@@ -45,6 +45,39 @@ export async function createCategory(
     });
 
   if (existing) {
+    if (!existing.isActive) {
+      const restored =
+        await prisma.category.update({
+          where: {
+            id: existing.id,
+          },
+
+          data: {
+            isActive: true,
+            description:
+              input.description ?? null,
+            imageUrl:
+              input.imageUrl ?? null,
+          },
+
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            imageUrl: true,
+          },
+        });
+
+      broadcast({
+        type: "category.updated",
+        payload: {
+          categoryId: restored.id,
+        },
+      });
+
+      return restored;
+    }
+
     throw new Error(
       "CATEGORY_ALREADY_EXISTS",
     );
@@ -56,6 +89,8 @@ export async function createCategory(
         name: input.name,
         description:
           input.description ?? null,
+        imageUrl:
+          input.imageUrl ?? null,
       },
 
       select: {
