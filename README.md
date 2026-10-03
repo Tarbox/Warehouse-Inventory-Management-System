@@ -67,30 +67,7 @@ The application supports both everyday warehouse workflows and administrative op
 
 ## Architecture
 
-```text
-                         Browser
-                            |
-                         HTTP/HTTPS
-                            |
-                            v
-                     +-------------+
-                     |    Nginx    |
-                     +-------------+
-                       |         |
-                HTTP   |         |  /api/*
-                       v         v
-                +---------+   +---------+
-                | Next.js |   | Fastify |
-                | Frontend|   | Backend |
-                +---------+   +---------+
-                                  |
-                                  v
-                           +--------------+
-                           |  PostgreSQL  |
-                           +--------------+
-                                  |
-                               Prisma
-```
+![Warehouse Inventory project preview](docs/Architecture.png)
 
 Realtime updates use WebSocket connections between the browser and backend.
 
