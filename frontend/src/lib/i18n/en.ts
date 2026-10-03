@@ -62,6 +62,7 @@ inventory: {
   searchPlaceholder: "Search materials...",
   loading: "Loading inventory...",
   item: "Item",
+  confirmSetQuantity: "Change the quantity to the entered value?",
   category: "Category",
   quantity: "Quantity",
   status: "Status",

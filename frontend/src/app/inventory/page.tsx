@@ -249,6 +249,14 @@ const activeCategory = categoryId
       return;
     }
 
+    const confirmed = window.confirm(
+  t.inventory.confirmSetQuantity,
+);
+
+if (!confirmed) {
+  return;
+}
+
     setUpdatingId(item.id);
     setError(null);
 
@@ -305,13 +313,9 @@ const activeCategory = categoryId
         return;
       }
 
-      if (error instanceof ApiError) {
-        getUserFriendlyErrorMessage(error);
-      } else {
-        setError(
-          getUserFriendlyErrorMessage(error),
-        );
-      }
+      setError(
+  getUserFriendlyErrorMessage(error),
+);
     } finally {
       setUpdatingId(null);
     }

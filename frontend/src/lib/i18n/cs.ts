@@ -64,6 +64,7 @@ inventory: {
   item: "Položka",
   category: "Kategorie",
   quantity: "Množství",
+  confirmSetQuantity: "Změnit množství položky na zadanou hodnotu?",
   status: "Stav",
   actions: "Akce",
   minimum: "Minimum",
