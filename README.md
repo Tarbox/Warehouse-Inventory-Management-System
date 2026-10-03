@@ -67,7 +67,7 @@ The application supports both everyday warehouse workflows and administrative op
 
 ## Architecture
 
-![Warehouse Inventory project preview](docs/Architecture.png)
+![Warehouse Inventory project preview](docs/mermaid-diagram.png)
 
 Realtime updates use WebSocket connections between the browser and backend.
 
