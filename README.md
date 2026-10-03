@@ -69,7 +69,15 @@ The application supports both everyday warehouse workflows and administrative op
 
 ![Warehouse Inventory project preview](docs/mermaid-diagram.png)
 
-Realtime updates use WebSocket connections between the browser and backend.
+### Request Flow
+
+1. The browser sends an HTTP/HTTPS request to Nginx.
+2. Nginx routes `/` requests to the Next.js frontend.
+3. API requests under `/api/*` are routed to the Fastify backend.
+4. The backend handles authentication, authorization, and business logic.
+5. Frontend and backend communicate through WebSocket for realtime updates.
+6. The backend uses Prisma ORM to access PostgreSQL.
+7. PostgreSQL stores users, roles, categories, materials, inventory, and transaction history.
 
 See [docs/architecture.md](docs/architecture.md).
 
