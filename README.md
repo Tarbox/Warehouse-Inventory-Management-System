@@ -418,6 +418,28 @@ docker compose -f docker-compose.test.yml up -d --wait
 | [API](docs/api.md) | API documentation |
 | [Security Policy](SECURITY.md) | Security reporting and policy |
 
+# Warehouse Inventory 2.0 Roadmap
+
+The next major version is planned around real warehouse workflows rather than isolated feature additions.
+
+| Phase | Priority | Planned outcome |
+| --- | --- | --- |
+| 01 — Roles & RBAC | Critical | Granular roles and permissions for Employee, Inventory Operator, Manager, and Admin |
+| 02 — Material Requests | Critical | Employees can request materials without directly changing stock |
+| 03 — Receiving & Issuing | Critical | Controlled receiving and issuing workflows managed by Inventory Operators |
+| 04 — Transactions & History | Critical | Immutable inventory transactions and complete traceability |
+| 05 — Packaging & Units | High | Base units, packaging units, and automatic quantity conversion |
+| 06 — Employee Experience | High | Simple warehouse-focused interface for requests and availability checks |
+| 07 — QR Workflow | Medium | QR-based access to materials and storage locations |
+| 08 — Statistics & Analytics | High | Consumption statistics, trends, usage, and inventory analytics |
+| 09 — Manager Dashboard | Medium | High-level stock, consumption, trends, and operational metrics |
+| 10 — Notifications | Medium | Alerts for requests, low stock, empty shelves, and unusual usage |
+| 11 — Reports | Medium | Inventory, consumption, receiving, issuing, and history reports with export |
+| 12 — Forecasting & Reorder | Low | Stock coverage, reorder points, and replenishment planning |
+| 13 — Advanced Warehouse | Low | Suppliers, purchase orders, departments, locations, transfers, and advanced analytics |
+
+The roadmap is intentionally incremental: critical warehouse workflows come first, followed by employee experience, visibility, automation, and advanced planning.
+
 # Project Status
 
 The project is maintained as a documented portfolio/open-source baseline.
