@@ -27,20 +27,44 @@ export function LocaleProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [locale, setLocale] = useState<Locale>("en");
+  const [locale, setLocale] =
+    useState<Locale>("en");
+
+  const [hydrated, setHydrated] =
+    useState(false);
 
   useEffect(() => {
-    const savedLocale = localStorage.getItem("warehouse-inventory-locale");
+    const savedLocale =
+      localStorage.getItem(
+        "warehouse-inventory-locale",
+      );
 
-    if (savedLocale === "en" || savedLocale === "cs") {
-      setLocale(savedLocale);
-    }
+    const initialLocale: Locale =
+      savedLocale === "cs" ||
+      savedLocale === "en"
+        ? savedLocale
+        : "en";
+
+    setLocale(initialLocale);
+    document.documentElement.lang =
+      initialLocale;
+
+    setHydrated(true);
   }, []);
-  useEffect(() => {
-    localStorage.setItem("warehouse-inventory-locale", locale);
-    document.documentElement.lang = locale;
 
-}, [locale]);
+  useEffect(() => {
+    if (!hydrated) {
+      return;
+    }
+
+    localStorage.setItem(
+      "warehouse-inventory-locale",
+      locale,
+    );
+
+    document.documentElement.lang =
+      locale;
+  }, [locale, hydrated]);
 
   const value = useMemo(
     () => ({
@@ -50,6 +74,15 @@ export function LocaleProvider({
     }),
     [locale],
   );
+
+  if (!hydrated) {
+    return (
+      <div
+        className="min-h-screen"
+        aria-hidden="true"
+      />
+    );
+  }
 
   return (
     <LocaleContext.Provider value={value}>
